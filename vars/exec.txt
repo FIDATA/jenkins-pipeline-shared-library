@@ -1,0 +1,7 @@
+Executes command using method appropriate for this node
+
+Parameters:
+*	`commandLine`: Command line to execute
+*	`returnStdout`: Return stdout instead of printing it to console. Default is false
+
+Returns command stdout if `returnStdout` is true

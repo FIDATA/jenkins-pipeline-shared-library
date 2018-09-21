@@ -1,0 +1,19 @@
+Adds prefix and/or suffix appropriate for this node to environment variable name
+so that it can be used in command line.
+Appropriate to use with `exec` and `tryExec` steps.
+
+Parameters:
+*	`envVarName`: Name of environment variable
+
+Usage examples:
+```
+node {
+	if (isUnix()) {
+	  assert e('HOME') == '$HOME'
+	} else {
+	  assert e('HOME') == '%HOME%'
+	}
+
+	exec "echo ${ e('PATH') }"
+}
+```

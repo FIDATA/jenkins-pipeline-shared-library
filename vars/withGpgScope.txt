@@ -1,0 +1,31 @@
+Creates temporal (scoped) GPG home and imports GPG key from specified Jenkins credential there.
+
+Requires installed GnuPG >= 2.1.13.
+Current version is able to install GnuPG automatically.
+This feature will be removed as soon as https://github.com/FIDATA/infrastructure/issues/83 will be implemented.
+
+Parameters:
+*	`gpgScope`: Directory where to install the key. Should not exist before run
+*	`keyCredentialId`: Key credential id. Should be of File type
+*	`passphraseCredentialId`: Passphrase credential id. Should be of String type
+*	`body`: Block to execute
+
+1.	It copies existing configuration files (`*.conf`) from current GPG home to scoped directory.
+	It also adds configuration options required for unattended GPG usage.
+
+2.	It also exports secret keys to `secring.gpg` keyring file for legacy GPG implementations.
+
+3.	It passes one parameter to the block, installed key fingerprint, and sets `GNUPGHOME` environment variable.
+
+4.	After block execution it turns off scoped GPG services and cleans `gpgScope` directory.
+
+
+Usage example:
+```
+node {
+  withGpgScope("${ pwd() }/gnupg", 'GPGKey', 'GPGKeyPassphrase') { fingerprint ->
+  	stage('Print fingerprint') {
+      sh "echo $fingerprint"
+    }
+  }
+```

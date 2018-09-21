@@ -1,0 +1,7 @@
+Executes command using method appropriate for this node
+ignoring its exit code
+
+Parameters:
+*	`commandLine`: Command line to execute
+
+Returns exit code
