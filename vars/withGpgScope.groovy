@@ -108,6 +108,7 @@ void call(String gpgScope, String keyCredentialId, String passphraseCredentialId
       }
     }
 
+    echo 'Looking for signing GPG key in credentials...'
     FileCredentials credentials = CredentialsProvider.findCredentialById(
       keyCredentialId,
       FileCredentials,
@@ -124,6 +125,7 @@ void call(String gpgScope, String keyCredentialId, String passphraseCredentialId
         getKeyUsages(key).contains(PGPKeyFlags.CAN_SIGN)
       }.publicKey.fingerprint
     )/*.toString()*/.toUpperCase()
+    echo "Found GPG key $fingerprint"
 
     echo 'Creating GPG scope directory and set permissions...'
     withEnv([
