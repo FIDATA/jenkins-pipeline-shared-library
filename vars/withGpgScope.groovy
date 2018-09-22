@@ -114,8 +114,6 @@ void call(String gpgScope, String keyCredentialId, String passphraseCredentialId
       FileCredentials,
       currentBuild.rawBuild
     )
-
-    Security.addProvider(new BouncyCastleProvider())
     String fingerprint = /*HashCode.fromBytes(*/Hex.encodeHexString(
       new PGPSecretKeyRing(
         PGPUtil.getDecoderStream(credentials.content),
