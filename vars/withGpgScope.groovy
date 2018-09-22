@@ -1,6 +1,4 @@
 #!/usr/bin/env groovy
-import org.bouncycastle.openpgp.PGPSecretKeyRing
-
 /*
  * withGpgScope Jenkins Pipeline step
  * Copyright © 2018  Basil Peace
@@ -26,6 +24,7 @@ import org.jenkinsci.plugins.plaincredentials.FileCredentials
 import java.security.Security
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 @Grab('org.bouncycastle:bcpg-jdk15on:[1, 2[')
+import org.bouncycastle.openpgp.PGPSecretKeyRing
 import org.bouncycastle.openpgp.PGPSecretKey
 import org.bouncycastle.openpgp.PGPUtil
 import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator
