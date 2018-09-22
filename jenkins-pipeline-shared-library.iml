@@ -45,5 +45,32 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Grab:groovy-cps-1.24.jar">
+        <CLASSES>
+          <root url="jar://$USER_HOME$/.groovy/grapes/com.cloudbees/groovy-cps/jars/groovy-cps-1.24.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Grab:guava-11.0.1.jar">
+        <CLASSES>
+          <root url="jar://$USER_HOME$/.groovy/grapes/com.google.guava/guava/jars/guava-11.0.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="Grab:jsr305-1.3.9.jar">
+        <CLASSES>
+          <root url="jar://$USER_HOME$/.groovy/grapes/com.google.code.findbugs/jsr305/jars/jsr305-1.3.9.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>

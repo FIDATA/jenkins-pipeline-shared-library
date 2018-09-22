@@ -15,7 +15,8 @@ Parameters:
 
 2.	It also exports secret keys to `secring.gpg` keyring file for legacy GPG implementations.
 
-3.	It passes one parameter to the block, installed key fingerprint, and sets `GNUPGHOME` environment variable.
+3.  It looks into specified credential for signing key with secret key available
+	and passes its fingerprint as parameter to the block. It also sets `GNUPGHOME` environment variable.
 
 4.	After block execution it turns off scoped GPG services and cleans `gpgScope` directory.
 

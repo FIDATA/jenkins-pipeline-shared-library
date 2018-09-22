@@ -19,6 +19,7 @@
  */
 import static org.fidata.gpg.GpgUtils.GPG_CONF_FILE_NAME
 import static org.fidata.gpg.GpgUtils.GPG_AGENT_CONF_FILE_NAME
+import static org.fidata.gpg.GpgUtils.getKeyUsages
 import com.cloudbees.plugins.credentials.CredentialsProvider
 import org.jenkinsci.plugins.plaincredentials.FileCredentials
 import java.security.Security
@@ -28,6 +29,7 @@ import org.bouncycastle.openpgp.PGPSecretKeyRing
 import org.bouncycastle.openpgp.PGPSecretKey
 import org.bouncycastle.openpgp.PGPUtil
 import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator
+import org.bouncycastle.openpgp.PGPKeyFlags
 import java.util.regex.Matcher
 @Grab('com.github.zafarkhaja:java-semver:[0, 1[')
 import com.github.zafarkhaja.semver.Version
@@ -118,7 +120,8 @@ void call(String gpgScope, String keyCredentialId, String passphraseCredentialId
         PGPUtil.getDecoderStream(credentials.content),
         new JcaKeyFingerprintCalculator()
       ).find { PGPSecretKey key ->
-        !key.privateKeyEmpty
+        !key.privateKeyEmpty &&
+        getKeyUsages(key).contains(PGPKeyFlags.CAN_SIGN)
       }.publicKey.fingerprint
     )/*.toString()*/.toUpperCase()
 
