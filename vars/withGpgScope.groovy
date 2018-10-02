@@ -64,7 +64,9 @@ String getGpgHome() {
    * <grv87 2018-09-20>
    */
   if (isUnix()) {
-    sh 'sudo apt-get --assume-yes install groovy'
+    lock('apt-get install groovy') {
+      sh 'sudo apt-get --assume-yes install groovy'
+    }
   }
 
   String getGpgHomeFilename = 'getGpgHome.groovy'
@@ -86,25 +88,27 @@ void call(String gpgScope, String keyCredentialId, String passphraseCredentialId
      * <grv87 2018-09-20>
      */
     echo 'Determining installed GnuPG version...'
-    Boolean isGpgInstalled
-    try {
-      isGpgInstalled = Version.valueOf(getGpgVersion())?.greaterThanOrEqualTo(Version.forIntegers(2, 1, 13))
-    } catch (ParseException ignored) {
-      isGpgInstalled = false
-    }
-    if (!isGpgInstalled) {
-      echo 'Installing recent GnuPG version...'
-      if (isUnix()) {
-        ws {
-          String installGnuPGFilename = 'install-gnupg-2.2.10.sh'
-          writeFile file: installGnuPGFilename, text: libraryResource("org/fidata/gpg/$installGnuPGFilename"), encoding: 'UTF-8'
-          sh """\
-            chmod +x $installGnuPGFilename
-            sudo --set-home bash ./$installGnuPGFilename
-          """.stripIndent()
+    lock('gpg --version') {
+      Boolean isGpgInstalled
+      try {
+        isGpgInstalled = Version.valueOf(getGpgVersion())?.greaterThanOrEqualTo(Version.forIntegers(2, 1, 13))
+      } catch (ParseException ignored) {
+        isGpgInstalled = false
+      }
+      if (!isGpgInstalled) {
+        echo 'Installing recent GnuPG version...'
+        if (isUnix()) {
+          ws {
+            String installGnuPGFilename = 'install-gnupg-2.2.10.sh'
+            writeFile file: installGnuPGFilename, text: libraryResource("org/fidata/gpg/$installGnuPGFilename"), encoding: 'UTF-8'
+            sh """\
+              chmod +x $installGnuPGFilename
+              sudo --set-home bash ./$installGnuPGFilename
+            """.stripIndent()
+          }
+        } else {
+          throw new UnsupportedOperationException('Installation of GnuPG under Windows is not supported yet')
         }
-      } else {
-        throw new UnsupportedOperationException('Installation of GnuPG under Windows is not supported yet')
       }
     }
 
