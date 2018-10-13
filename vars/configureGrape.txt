@@ -1,0 +1,14 @@
+Adds Grape configuration to resolve artifacts from FIDATA Artifactory.
+Does't do anything if configuration file already exists.
+
+Parameters:
+*	`artifactoryCredentialId`: Credential id to connect to FIDATA Artifactory. Should be of Username with password type
+
+Returns true if configuration was actually written.
+
+Usage examples:
+```
+node {
+	configureGrape('Artifactory')
+}
+```

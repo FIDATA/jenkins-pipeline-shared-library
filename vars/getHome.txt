@@ -1,0 +1,1 @@
+Gets home directory of current user on the node
