@@ -139,7 +139,7 @@ void call(String gpgScope, String keyCredentialId, String passphraseCredentialId
           chmod 0700 "$GNUPGHOME"
         '''.stripIndent()
       } else {
-        batch '''
+        batch '''\
           md "%GNUPGHOME%"
           icacls "%GNUPGHOME%" /inheritance:r /grant:r "%USERNAME%":(OI)(CI)F
         '''.stripIndent()
