@@ -64,8 +64,8 @@ String getGpgHome() {
    * <grv87 2018-09-20>
    */
   if (isUnix()) {
-    lock('apt-get install groovy') {
-      sh 'sudo apt-get --assume-yes install groovy'
+    lock('apt-get install groovy2') {
+      sh 'sudo apt-get --assume-yes install groovy2'
     }
   }
 
