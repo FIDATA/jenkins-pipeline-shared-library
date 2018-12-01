@@ -24,9 +24,9 @@ import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo
 void call(
   boolean publicReleases,
   Map<String, Integer> timeouts = [:],
-  List<String> codenarcReports = [],
-  List<String> tests = [],
+  Set<String> tests = [],
   boolean compatTest = true,
+  Set<String> customCodenarcReports = [],
   boolean gradlePlugin = false
 ) {
   String projectName = JOB_NAME.split('/')[0]
@@ -155,6 +155,16 @@ void call(
                       buildInfo = rtGradle.run tasks: 'lint', switches: "$gradleSwitches --continue".toString(), buildInfo: buildInfo
                     }
                   } finally {
+                    Set<String> codenarcReports = [
+                      'main',
+                      'buildSrc'
+                    ]
+                    codenarcReports.addAll tests
+                    if (compatTest) {
+                      codenarcReports.add 'compatTest'
+                    }
+                    codenarcReports.addAll customCodenarcReports
+
                     publishHTML(target: [
                       reportName: 'CodeNarc',
                       reportDir: 'build/reports/html/codenarc',
@@ -183,10 +193,10 @@ void call(
                       allowEmptyResults: true,
                       keepLongStdio: true,
                     )
-                    tests.each { String testReport ->
+                    tests.each { String test ->
                       publishHTML(target: [
-                        reportName: testReport.capitalize(),
-                        reportDir: "build/reports/html/$testReport".toString(),
+                        reportName: test.capitalize(),
+                        reportDir: "build/reports/html/$test".toString(),
                         reportFiles: 'index.html',
                         allowMissing: true,
                         keepAll: true,
