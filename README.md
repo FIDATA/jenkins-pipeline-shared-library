@@ -3,6 +3,10 @@ jenkins-pipeline-shared-library
 
 Shared utils for Jenkins Pipelines for FIDATA projects.
 
+Pipelines:
+*   `defaultJVMPipeline` — default pipeline to build JVM projects
+    with Gradle
+
 Steps:
 
 *   `exec` — Executes command using method appropriate for this node

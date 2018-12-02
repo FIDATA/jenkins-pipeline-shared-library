@@ -1,4 +1,4 @@
-Default Jenkins pipeline to build JVM plugins.
+Default pipeline to build JVM projects with Gradle.
 
 Parameters:
 *	`publicReleases`: Whether releases of the project are public. Required
