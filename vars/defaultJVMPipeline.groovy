@@ -22,13 +22,15 @@ import org.jfrog.hudson.pipeline.types.GradleBuild
 import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo
 
 void call(
-  boolean publicReleases,
-  Map<String, Integer> timeouts = [:],
-  Set<String> tests = [],
-  boolean compatTest = true,
-  Set<String> customCodenarcReports = [],
-  boolean gradlePlugin = false
+  final Map<String, Object> config
 ) {
+  boolean publicReleases = config['publicReleases']
+  Map<String, Integer> timeouts = (Map<String, Integer>)config.getOrDefault('timeouts', [:])
+  Set<String> tests = (Set<String>)config.getOrDefault('tests', [].toSet())
+  boolean compatTest = config.getOrDefault('compatTest', Boolean.TRUE)
+  Set<String> customCodenarcReports = (Set<String>)config.getOrDefault('customCodenarcReports', [].toSet())
+  boolean gradlePlugin = config.getOrDefault('gradlePlugin', Boolean.FALSE)
+
   String projectName = JOB_NAME.split('/')[0]
 
   node {
