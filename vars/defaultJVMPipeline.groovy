@@ -33,6 +33,12 @@ void call(
 
   String projectName = JOB_NAME.split('/')[0]
 
+  properties([
+    parameters([
+      booleanParam(defaultValue: false, description: 'Whether to release a new version', name: 'shouldRelease'),
+    ])
+  ])
+
   node {
     ansiColor {
       GradleBuild rtGradle
@@ -86,6 +92,7 @@ void call(
 
       withGpgScope("${ pwd() }/.scoped-gpg", 'GPG', 'GPG_KEY_PASSWORD') { String fingerprint ->
         withEnv([
+          "ORG_GRADLE_PROJECT_shouldRelease=$params.shouldRelease",
           "ORG_GRADLE_PROJECT_gpgKeyId=$fingerprint",
         ]) {
           List credentials = [
@@ -133,7 +140,7 @@ void call(
                   reportFiles: 'CHANGELOG.html',
                   allowMissing: false,
                   keepAll: true,
-                  alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
+                  alwaysLinkToLastBuild: env.BRANCH_NAME == 'master' && !env.CHANGE_ID
                 ])
               }
               stage('Assemble') {
@@ -173,7 +180,7 @@ void call(
                       reportFiles: codenarcReports.collect { "${ it }.html" }.join(', '), // TODO: read from directory ?
                       allowMissing: true,
                       keepAll: true,
-                      alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
+                      alwaysLinkToLastBuild: env.BRANCH_NAME == 'master' && !env.CHANGE_ID
                     ])
                   }
                 }
@@ -202,7 +209,7 @@ void call(
                         reportFiles: 'index.html',
                         allowMissing: true,
                         keepAll: true,
-                        alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
+                        alwaysLinkToLastBuild: env.BRANCH_NAME == 'master' && !env.CHANGE_ID
                       ])
                     }
                     if (compatTest) {
@@ -218,7 +225,7 @@ void call(
                             .join(', '),
                         allowMissing: true,
                         keepAll: true,
-                        alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
+                        alwaysLinkToLastBuild: env.BRANCH_NAME == 'master' && !env.CHANGE_ID
                       ])
                     }
                   }
