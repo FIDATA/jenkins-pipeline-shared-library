@@ -17,9 +17,9 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-import org.jfrog.hudson.pipeline.types.ArtifactoryServer
-import org.jfrog.hudson.pipeline.types.GradleBuild
-import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo
+import org.jfrog.hudson.pipeline.common.types.ArtifactoryServer
+import org.jfrog.hudson.pipeline.common.types.packageManagerBuilds.GradleBuild
+import org.jfrog.hudson.pipeline.common.types.buildInfo.BuildInfo
 
 void call(
   final Map<String, Object> config
