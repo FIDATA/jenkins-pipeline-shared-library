@@ -17,6 +17,7 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+import io.jenkins.plugins.analysis.core.steps.AnnotatedReport
 import org.jfrog.hudson.pipeline.common.types.ArtifactoryServer
 import org.jfrog.hudson.pipeline.common.types.packageManagerBuilds.GradleBuild
 import org.jfrog.hudson.pipeline.common.types.buildInfo.BuildInfo
@@ -111,6 +112,7 @@ void call(
           }
           withCredentials(credentials) {
             BuildInfo buildInfo = null
+            List<AnnotatedReport> issues = []
             try {
               stage('Generate Changelog') {
                 timeout(time: timeouts.getOrDefault('Generate Changelog', 5), unit: 'MINUTES') {
@@ -151,12 +153,8 @@ void call(
                     buildInfo = rtGradle.run tasks: 'assemble', switches: gradleSwitches, buildInfo: buildInfo
                   }
                 } finally {
-                  warnings(
-                    consoleParsers: [
-                      [parserName: 'Java Compiler (javac)'],
-                      [parserName: 'JavaDoc Tool'],
-                    ]
-                  )
+                  issues.addAll scanForIssues(id: 'Java (Assemble)', name: 'Java (Assemble)', tool: java())
+                  issues.addAll scanForIssues(id: 'Javadoc (Assemble)', name: 'Javadoc (Assemble)', tool: javaDoc())
                 }
               }
               try {
@@ -193,12 +191,8 @@ void call(
                       buildInfo = rtGradle.run tasks: 'check', switches: gradleSwitches, buildInfo: buildInfo
                     }
                   } finally {
-                    warnings(
-                      consoleParsers: [
-                        [parserName: 'Java Compiler (javac)'],
-                        [parserName: 'JavaDoc Tool'],
-                      ]
-                    )
+                    issues.addAll scanForIssues(id: 'Java (Test)', name: 'Java (Test)', tool: java())
+                    issues.addAll scanForIssues(id: 'Javadoc (Test)', name: 'Javadoc (Test)', tool: javaDoc())
                     junit(
                       testResults: 'build/reports/xml/**/*.xml',
                       allowEmptyResults: true,
@@ -242,16 +236,15 @@ void call(
                     }
                   }
                 } finally {
-                  warnings(
-                    consoleParsers: [
-                      [parserName: 'Java Compiler (javac)'],
-                      [parserName: 'JavaDoc Tool'],
-                    ]
-                  )
+                  issues.addAll scanForIssues(id: 'Java (Release)', name: 'Java (Release)', tool: java())
+                  issues.addAll scanForIssues(id: 'Javadoc (Release)', name: 'Javadoc (Release)', tool: javaDoc())
                 }
               }
             } finally {
               server.publishBuildInfo buildInfo
+              if (issues) {
+                publishIssues name: 'Lint', issues: issues, ignoreFailedBuilds: false, qualityGates: [[threshold: 1, type: 'TOTAL', unstable: false]]
+              }
             }
           }
         }
