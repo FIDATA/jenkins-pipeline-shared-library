@@ -29,7 +29,6 @@ void call(
   Map<String, Integer> timeouts = (Map<String, Integer>)config.getOrDefault('timeouts', [:])
   Set<String> tests = (Set<String>)config.getOrDefault('tests', [].toSet())
   boolean compatTest = config.getOrDefault('compatTest', Boolean.TRUE)
-  Set<String> customCodenarcReports = (Set<String>)config.getOrDefault('customCodenarcReports', [].toSet())
   boolean gradlePlugin = config.getOrDefault('gradlePlugin', Boolean.FALSE)
 
   String projectName = JOB_NAME.split('/')[0]
@@ -164,24 +163,19 @@ void call(
                       buildInfo = rtGradle.run tasks: 'lint', switches: "$gradleSwitches --continue".toString(), buildInfo: buildInfo
                     }
                   } finally {
-                    Set<String> codenarcReports = [
-                      'main',
-                      'buildSrc'
-                    ]
-                    codenarcReports.addAll tests
-                    if (compatTest) {
-                      codenarcReports.add 'compatTest'
-                    }
-                    codenarcReports.addAll customCodenarcReports
+                    /*
+                     * CAVEAT:
+                     * Don't use checkstyleReports list, for simplicity
+                     * <grv87 2019-03-27>
+                     */
+                    issues.addAll scanForIssues(tool: checkStyle(pattern: 'build/reports/xml/checkstyle/*.xml'))
 
-                    publishHTML(target: [
-                      reportName: 'CodeNarc',
-                      reportDir: 'build/reports/html/codenarc',
-                      reportFiles: codenarcReports.collect { "${ it }.html" }.join(', '), // TODO: read from directory ?
-                      allowMissing: true,
-                      keepAll: true,
-                      alwaysLinkToLastBuild: alwaysLinkReportsToLastBuild
-                    ])
+                    /*
+                     * CAVEAT:
+                     * Don't use codenarcReports list, for simplicity
+                     * <grv87 2019-03-27>
+                     */
+                    issues.addAll scanForIssues(tool: codeNarc(pattern: 'build/reports/xml/codenarc/*.xml'))
                   }
                 }
               } finally {
