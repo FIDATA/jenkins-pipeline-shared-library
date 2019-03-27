@@ -67,6 +67,8 @@ void call(
       rtGradle.useWrapper = true
       rtGradle.usesPlugin = true
 
+      boolean alwaysLinkReportsToLastBuild = env.BRANCH_NAME == 'master' && !env.CHANGE_ID
+
       /*
        * WORKAROUND:
        * Disabling Gradle Welcome message
@@ -140,7 +142,7 @@ void call(
                   reportFiles: 'CHANGELOG.html',
                   allowMissing: false,
                   keepAll: true,
-                  alwaysLinkToLastBuild: env.BRANCH_NAME == 'master' && !env.CHANGE_ID
+                  alwaysLinkToLastBuild: alwaysLinkReportsToLastBuild
                 ])
               }
               stage('Assemble') {
@@ -180,7 +182,7 @@ void call(
                       reportFiles: codenarcReports.collect { "${ it }.html" }.join(', '), // TODO: read from directory ?
                       allowMissing: true,
                       keepAll: true,
-                      alwaysLinkToLastBuild: env.BRANCH_NAME == 'master' && !env.CHANGE_ID
+                      alwaysLinkToLastBuild: alwaysLinkReportsToLastBuild
                     ])
                   }
                 }
@@ -209,7 +211,7 @@ void call(
                         reportFiles: 'index.html',
                         allowMissing: true,
                         keepAll: true,
-                        alwaysLinkToLastBuild: env.BRANCH_NAME == 'master' && !env.CHANGE_ID
+                        alwaysLinkToLastBuild: alwaysLinkReportsToLastBuild
                       ])
                     }
                     if (compatTest) {
@@ -225,7 +227,7 @@ void call(
                             .join(', '),
                         allowMissing: true,
                         keepAll: true,
-                        alwaysLinkToLastBuild: env.BRANCH_NAME == 'master' && !env.CHANGE_ID
+                        alwaysLinkToLastBuild: alwaysLinkReportsToLastBuild
                       ])
                     }
                   }
