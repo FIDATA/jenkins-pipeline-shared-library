@@ -187,12 +187,12 @@ void call(
                   } finally {
                     issues.addAll scanForIssues(id: 'Java (Test)', name: 'Java (Test)', tool: java())
                     issues.addAll scanForIssues(id: 'Javadoc (Test)', name: 'Javadoc (Test)', tool: javaDoc())
-                    junit(
-                      testResults: 'build/reports/xml/**/*.xml',
-                      allowEmptyResults: true,
-                      keepLongStdio: true,
-                    )
                     tests.each { String test ->
+                      junit(
+                        testResults: "build/reports/xml/$test/*.xml".toString(),
+                        allowEmptyResults: true,
+                        keepLongStdio: true,
+                      )
                       publishHTML(target: [
                         reportName: test.capitalize(),
                         reportDir: "build/reports/html/$test".toString(),
@@ -203,6 +203,11 @@ void call(
                       ])
                     }
                     if (compatTest) {
+                      junit(
+                        testResults: "build/reports/xml/compatTest/*/*.xml".toString(),
+                        allowEmptyResults: true,
+                        keepLongStdio: true,
+                      )
                       publishHTML(target: [
                         reportName: 'CompatTest',
                         reportDir: 'build/reports/html/compatTest',
