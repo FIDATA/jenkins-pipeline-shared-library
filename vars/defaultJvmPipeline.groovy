@@ -244,6 +244,7 @@ void call(
               if (issues) {
                 publishIssues name: 'Lint', issues: issues, ignoreFailedBuilds: false, qualityGates: [[threshold: 1, type: 'TOTAL', unstable: false]]
               }
+              chuckNorris()
             }
           }
         }
