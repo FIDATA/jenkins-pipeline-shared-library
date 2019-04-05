@@ -22,16 +22,14 @@ import org.jfrog.hudson.pipeline.common.types.ArtifactoryServer
 import org.jfrog.hudson.pipeline.common.types.packageManagerBuilds.GradleBuild
 import org.jfrog.hudson.pipeline.common.types.buildInfo.BuildInfo
 
-void call(
-  final Map<String, Object> config
-) {
+void call(final Map<String, Object> config) {
   boolean publicReleases = config['publicReleases']
   Map<String, Integer> timeouts = (Map<String, Integer>)config.getOrDefault('timeouts', [:])
   Set<String> tests = (Set<String>)config.getOrDefault('tests', [].toSet())
   boolean compatTest = config.getOrDefault('compatTest', Boolean.TRUE)
   boolean gradlePlugin = config.getOrDefault('gradlePlugin', Boolean.FALSE)
 
-  String projectName = JOB_NAME.split('/')[0]
+  String projectName = ((String)JOB_NAME).split('/')[0]
 
   properties([
     parameters([
@@ -215,8 +213,8 @@ void call(
                           readFile(file: '.stutter/java8.lock', encoding: 'UTF-8') // TODO: respect other Java versions
                             .split('[\r\n]+')
                           // Copy of algorithm from StutterExtension.getLockedVersions
-                            .findAll { !it.startsWith('#') }
-                            .collect { "${ it.trim() }/index.html" }
+                            .findAll { String line -> !line.startsWith('#') }
+                            .collect { String version -> "${ version.trim() }/index.html" }
                             .join(', '),
                         allowMissing: true,
                         keepAll: true,
