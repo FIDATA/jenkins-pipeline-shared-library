@@ -102,6 +102,7 @@ void call(final Map<String, Object> config) {
             string(credentialsId: 'GPG_KEY_PASSWORD', variable: 'ORG_GRADLE_PROJECT_gpgKeyPassphrase'),
           ]
           if (publicReleases) {
+            credentials.add usernamePassword(credentialsId: 'MavenCentral', usernameVariable: 'ORG_GRADLE_PROJECT_mavenCentralUsername', passwordVariable: 'ORG_GRADLE_PROJECT_mavenCentralPassword')
             credentials.add usernamePassword(credentialsId: 'Bintray', usernameVariable: 'ORG_GRADLE_PROJECT_bintrayUser', passwordVariable: 'ORG_GRADLE_PROJECT_bintrayAPIKey')
             if (gradlePlugin) {
               credentials.add usernamePassword(credentialsId: 'Gradle Plugins', usernameVariable: 'ORG_GRADLE_PROJECT_gradlePluginsKey', passwordVariable: 'ORG_GRADLE_PROJECT_gradlePluginsSecret')
