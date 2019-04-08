@@ -4,5 +4,4 @@ Parameters: map of:
 *	`publicReleases`: Whether releases of the project are public. Required
 *	`timeouts`: Custom timeouts for pipeline stages (except Checkout). Default timeouts are 5 minutes for each stage
 *	`tests`: List of test reports (except compatTest)
-*	`compatTest`: Whether project has compatTest. Default is true
 *	`gradlePlugin`: Whether project is a Gradle plugin. Default is false

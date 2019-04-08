@@ -26,7 +26,6 @@ void call(final Map<String, Object> config) {
   boolean publicReleases = config['publicReleases']
   Map<String, Integer> timeouts = (Map<String, Integer>)config.getOrDefault('timeouts', [:])
   Set<String> tests = (Set<String>)config.getOrDefault('tests', [].toSet())
-  boolean compatTest = config.getOrDefault('compatTest', Boolean.TRUE)
   boolean gradlePlugin = config.getOrDefault('gradlePlugin', Boolean.FALSE)
 
   String projectName = ((String)JOB_NAME).split('/')[0]
@@ -201,7 +200,7 @@ void call(final Map<String, Object> config) {
                         alwaysLinkToLastBuild: alwaysLinkReportsToLastBuild
                       ])
                     }
-                    if (compatTest) {
+                    if (fileExists('src/compatTest')) {
                       junit(
                         testResults: "build/reports/xml/compatTest/*/*.xml".toString(),
                         allowEmptyResults: true,
