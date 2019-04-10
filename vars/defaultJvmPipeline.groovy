@@ -30,23 +30,30 @@ void call(final Map<String, Object> config) {
 
   String projectName = ((String)JOB_NAME).split('/')[0]
 
-  properties([
-    parameters([
-      booleanParam(defaultValue: false, description: 'Whether to release a new version', name: 'shouldRelease'),
+  String branchName = env.BRANCH_NAME
+  boolean isMaster = branchName == 'master'
+  boolean isNotPR = !env.CHANGE_ID
+  boolean isMasterAndNotPR = isMaster && isNotPR
+
+  if (isMaster && isNotPR) {
+    properties([
+      parameters([
+        booleanParam(defaultValue: false, description: 'Whether to release a new version', name: 'shouldRelease'),
+      ])
     ])
-  ])
+  }
+
+  boolean shouldRelease = isMasterAndNotPR ? params.shouldRelease : false
 
   node {
     ansiColor {
-      GradleBuild rtGradle
-
       stage('Checkout') {
         List<Map<String, ? extends Serializable>> extensions = [
           [$class: 'WipeWorkspace'],
           [$class: 'CloneOption', noTags: false, shallow: false],
         ]
-        if (!env.CHANGE_ID) {
-          extensions.add([$class: 'LocalBranch', localBranch: env.BRANCH_NAME])
+        if (isNotPR) {
+          extensions.add([$class: 'LocalBranch', localBranch: branchName])
         }
         checkout([
           $class: 'GitSCM',
@@ -60,11 +67,11 @@ void call(final Map<String, Object> config) {
       }
 
       ArtifactoryServer server = Artifactory.server 'FIDATA'
-      rtGradle = Artifactory.newGradleBuild()
+      GradleBuild rtGradle = Artifactory.newGradleBuild()
       rtGradle.useWrapper = true
       rtGradle.usesPlugin = true
 
-      boolean alwaysLinkReportsToLastBuild = env.BRANCH_NAME == 'master' && !env.CHANGE_ID
+      boolean alwaysLinkReportsToLastBuild = isMasterAndNotPR
 
       /*
        * WORKAROUND:
@@ -91,7 +98,7 @@ void call(final Map<String, Object> config) {
 
       withGpgScope("${ pwd() }/.scoped-gpg", 'GPG', 'GPG_KEY_PASSWORD') { String fingerprint ->
         withEnv([
-          "ORG_GRADLE_PROJECT_shouldRelease=$params.shouldRelease",
+          "ORG_GRADLE_PROJECT_shouldRelease=$shouldRelease",
           "ORG_GRADLE_PROJECT_gpgKeyId=$fingerprint",
         ]) {
           List credentials = [
