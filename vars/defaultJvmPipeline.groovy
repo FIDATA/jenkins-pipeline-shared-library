@@ -47,8 +47,6 @@ void call(final Map<String, Object> config) {
 
   node {
     ansiColor {
-      GradleBuild rtGradle
-
       stage('Checkout') {
         List<Map<String, ? extends Serializable>> extensions = [
           [$class: 'WipeWorkspace'],
@@ -69,7 +67,7 @@ void call(final Map<String, Object> config) {
       }
 
       ArtifactoryServer server = Artifactory.server 'FIDATA'
-      rtGradle = Artifactory.newGradleBuild()
+      GradleBuild rtGradle = Artifactory.newGradleBuild()
       rtGradle.useWrapper = true
       rtGradle.usesPlugin = true
 
