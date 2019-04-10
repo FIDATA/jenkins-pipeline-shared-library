@@ -17,19 +17,24 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-import org.jfrog.hudson.pipeline.types.ArtifactoryServer
-import org.jfrog.hudson.pipeline.types.GradleBuild
-import org.jfrog.hudson.pipeline.types.buildInfo.BuildInfo
+import io.jenkins.plugins.analysis.core.steps.AnnotatedReport
+import org.jfrog.hudson.pipeline.common.types.ArtifactoryServer
+import org.jfrog.hudson.pipeline.common.types.packageManagerBuilds.GradleBuild
+import org.jfrog.hudson.pipeline.common.types.buildInfo.BuildInfo
 
-void call(
-  boolean publicReleases,
-  Map<String, Integer> timeouts = [:],
-  Set<String> tests = [],
-  boolean compatTest = true,
-  Set<String> customCodenarcReports = [],
-  boolean gradlePlugin = false
-) {
-  String projectName = JOB_NAME.split('/')[0]
+void call(final Map<String, Object> config) {
+  boolean publicReleases = config['publicReleases']
+  Map<String, Integer> timeouts = (Map<String, Integer>)config.getOrDefault('timeouts', [:])
+  Set<String> tests = (Set<String>)config.getOrDefault('tests', [].toSet())
+  boolean gradlePlugin = config.getOrDefault('gradlePlugin', Boolean.FALSE)
+
+  String projectName = ((String)JOB_NAME).split('/')[0]
+
+  properties([
+    parameters([
+      booleanParam(defaultValue: false, description: 'Whether to release a new version', name: 'shouldRelease'),
+    ])
+  ])
 
   node {
     ansiColor {
@@ -59,6 +64,8 @@ void call(
       rtGradle.useWrapper = true
       rtGradle.usesPlugin = true
 
+      boolean alwaysLinkReportsToLastBuild = env.BRANCH_NAME == 'master' && !env.CHANGE_ID
+
       /*
        * WORKAROUND:
        * Disabling Gradle Welcome message
@@ -84,6 +91,7 @@ void call(
 
       withGpgScope("${ pwd() }/.scoped-gpg", 'GPG', 'GPG_KEY_PASSWORD') { String fingerprint ->
         withEnv([
+          "ORG_GRADLE_PROJECT_shouldRelease=$params.shouldRelease",
           "ORG_GRADLE_PROJECT_gpgKeyId=$fingerprint",
         ]) {
           List credentials = [
@@ -93,6 +101,7 @@ void call(
             string(credentialsId: 'GPG_KEY_PASSWORD', variable: 'ORG_GRADLE_PROJECT_gpgKeyPassphrase'),
           ]
           if (publicReleases) {
+            credentials.add usernamePassword(credentialsId: 'MavenCentral', usernameVariable: 'ORG_GRADLE_PROJECT_mavenCentralUsername', passwordVariable: 'ORG_GRADLE_PROJECT_mavenCentralPassword')
             credentials.add usernamePassword(credentialsId: 'Bintray', usernameVariable: 'ORG_GRADLE_PROJECT_bintrayUser', passwordVariable: 'ORG_GRADLE_PROJECT_bintrayAPIKey')
             if (gradlePlugin) {
               credentials.add usernamePassword(credentialsId: 'Gradle Plugins', usernameVariable: 'ORG_GRADLE_PROJECT_gradlePluginsKey', passwordVariable: 'ORG_GRADLE_PROJECT_gradlePluginsSecret')
@@ -100,6 +109,7 @@ void call(
           }
           withCredentials(credentials) {
             BuildInfo buildInfo = null
+            List<AnnotatedReport> issues = []
             try {
               stage('Generate Changelog') {
                 timeout(time: timeouts.getOrDefault('Generate Changelog', 5), unit: 'MINUTES') {
@@ -131,7 +141,7 @@ void call(
                   reportFiles: 'CHANGELOG.html',
                   allowMissing: false,
                   keepAll: true,
-                  alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
+                  alwaysLinkToLastBuild: alwaysLinkReportsToLastBuild
                 ])
               }
               stage('Assemble') {
@@ -140,12 +150,8 @@ void call(
                     buildInfo = rtGradle.run tasks: 'assemble', switches: gradleSwitches, buildInfo: buildInfo
                   }
                 } finally {
-                  warnings(
-                    consoleParsers: [
-                      [parserName: 'Java Compiler (javac)'],
-                      [parserName: 'JavaDoc Tool'],
-                    ]
-                  )
+                  issues.addAll scanForIssues(id: 'Java (Assemble)', name: 'Java (Assemble)', tool: java())
+                  issues.addAll scanForIssues(id: 'Javadoc (Assemble)', name: 'Javadoc (Assemble)', tool: javaDoc())
                 }
               }
               try {
@@ -155,24 +161,19 @@ void call(
                       buildInfo = rtGradle.run tasks: 'lint', switches: "$gradleSwitches --continue".toString(), buildInfo: buildInfo
                     }
                   } finally {
-                    Set<String> codenarcReports = [
-                      'main',
-                      'buildSrc'
-                    ]
-                    codenarcReports.addAll tests
-                    if (compatTest) {
-                      codenarcReports.add 'compatTest'
-                    }
-                    codenarcReports.addAll customCodenarcReports
+                    /*
+                     * CAVEAT:
+                     * Don't use checkstyleReports list, for simplicity
+                     * <grv87 2019-03-27>
+                     */
+                    issues.addAll scanForIssues(tool: checkStyle(pattern: 'build/reports/xml/checkstyle/*.xml'))
 
-                    publishHTML(target: [
-                      reportName: 'CodeNarc',
-                      reportDir: 'build/reports/html/codenarc',
-                      reportFiles: codenarcReports.collect { "${ it }.html" }.join(', '), // TODO: read from directory ?
-                      allowMissing: true,
-                      keepAll: true,
-                      alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
-                    ])
+                    /*
+                     * CAVEAT:
+                     * Don't use codenarcReports list, for simplicity
+                     * <grv87 2019-03-27>
+                     */
+                    issues.addAll scanForIssues(tool: codeNarc(pattern: 'build/reports/xml/codenarc/*.xml'))
                   }
                 }
               } finally {
@@ -182,28 +183,29 @@ void call(
                       buildInfo = rtGradle.run tasks: 'check', switches: gradleSwitches, buildInfo: buildInfo
                     }
                   } finally {
-                    warnings(
-                      consoleParsers: [
-                        [parserName: 'Java Compiler (javac)'],
-                        [parserName: 'JavaDoc Tool'],
-                      ]
-                    )
-                    junit(
-                      testResults: 'build/reports/xml/**/*.xml',
-                      allowEmptyResults: true,
-                      keepLongStdio: true,
-                    )
+                    issues.addAll scanForIssues(id: 'Java (Test)', name: 'Java (Test)', tool: java())
+                    issues.addAll scanForIssues(id: 'Javadoc (Test)', name: 'Javadoc (Test)', tool: javaDoc())
                     tests.each { String test ->
+                      junit(
+                        testResults: "build/reports/xml/$test/*.xml".toString(),
+                        allowEmptyResults: true,
+                        keepLongStdio: true,
+                      )
                       publishHTML(target: [
                         reportName: test.capitalize(),
                         reportDir: "build/reports/html/$test".toString(),
                         reportFiles: 'index.html',
                         allowMissing: true,
                         keepAll: true,
-                        alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
+                        alwaysLinkToLastBuild: alwaysLinkReportsToLastBuild
                       ])
                     }
-                    if (compatTest) {
+                    if (fileExists('src/compatTest')) {
+                      junit(
+                        testResults: "build/reports/xml/compatTest/*/*.xml".toString(),
+                        allowEmptyResults: true,
+                        keepLongStdio: true,
+                      )
                       publishHTML(target: [
                         reportName: 'CompatTest',
                         reportDir: 'build/reports/html/compatTest',
@@ -211,12 +213,12 @@ void call(
                           readFile(file: '.stutter/java8.lock', encoding: 'UTF-8') // TODO: respect other Java versions
                             .split('[\r\n]+')
                           // Copy of algorithm from StutterExtension.getLockedVersions
-                            .findAll { !it.startsWith('#') }
-                            .collect { "${ it.trim() }/index.html" }
+                            .findAll { String line -> !line.startsWith('#') }
+                            .collect { String version -> "${ version.trim() }/index.html" }
                             .join(', '),
                         allowMissing: true,
                         keepAll: true,
-                        alwaysLinkToLastBuild: env.BRANCH_NAME == 'develop' && !env.CHANGE_ID
+                        alwaysLinkToLastBuild: alwaysLinkReportsToLastBuild
                       ])
                     }
                   }
@@ -231,16 +233,16 @@ void call(
                     }
                   }
                 } finally {
-                  warnings(
-                    consoleParsers: [
-                      [parserName: 'Java Compiler (javac)'],
-                      [parserName: 'JavaDoc Tool'],
-                    ]
-                  )
+                  issues.addAll scanForIssues(id: 'Java (Release)', name: 'Java (Release)', tool: java())
+                  issues.addAll scanForIssues(id: 'Javadoc (Release)', name: 'Javadoc (Release)', tool: javaDoc())
                 }
               }
             } finally {
               server.publishBuildInfo buildInfo
+              if (issues) {
+                publishIssues name: 'Lint', issues: issues, ignoreFailedBuilds: false, qualityGates: [[threshold: 1, type: 'TOTAL', unstable: false]]
+              }
+              chuckNorris()
             }
           }
         }

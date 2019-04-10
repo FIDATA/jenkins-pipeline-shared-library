@@ -105,6 +105,7 @@ void call(String gpgScope, String keyCredentialId, String passphraseCredentialId
               chmod +x $installGnuPGFilename
               sudo --set-home bash ./$installGnuPGFilename
             """.stripIndent()
+            sh 'sudo ln -s /usr/local/libexec/gpg-preset-passphrase /usr/local/bin'
           }
         } else {
           throw new UnsupportedOperationException('Installation of GnuPG under Windows is not supported yet')

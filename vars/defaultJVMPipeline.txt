@@ -1,9 +1,0 @@
-Default Jenkins pipeline to build JVM plugins.
-
-Parameters:
-*	`publicReleases`: Whether releases of the project are public. Required
-*	`timeouts`: Custom timeouts for pipeline stages (except Checkout). Default timeouts are 5 minutes for each stage
-*	`tests`: List of test reports
-*	`compatTest`: Whether project has compatTest. Default is true
-*	`customCodenarcReports`: List of custom CodeNarc reports (except `main`, `buildSrc`, tests and `compatTest`)
-*	`gradlePlugin`: Whether project is a Gradle plugin. Default is false
