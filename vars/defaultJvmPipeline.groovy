@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /*
  * Default Jenkins pipeline for JVM projects
- * Copyright © 2018  Basil Peace
+ * Copyright ©  Basil Peace
  *
  * This file is part of jenkins-pipeline-shared-library.
  *

@@ -24,7 +24,7 @@ Steps:
 
 
 ------------------------------------------------------------------------
-Copyright © 2018  Basil Peace
+Copyright ©  Basil Peace
 
 This file is part of jenkins-pipeline-shared-library.
 
