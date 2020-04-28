@@ -55,7 +55,7 @@ void call(final Map<String, Object> config = [:]) {
             usernameColonPassword(credentialsId: 'Artifactory', variable: 'ARTIFACTORY_USERNAME_PASSWORD')
           ]) {
             withNodeJs {
-              exec 'sudo npm install -g @semantic-release/exec'
+              exec 'npm install -g semantic-release @semantic-release/exec'
               withComposer {
                 stage('Release') {
                   exec 'npx semantic-release'
