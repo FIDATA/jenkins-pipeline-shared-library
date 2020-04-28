@@ -54,8 +54,12 @@ void call(final Map<String, Object> config = [:]) {
           withCredentials([
             usernameColonPassword(credentialsId: 'Artifactory', variable: 'ARTIFACTORY_USERNAME_PASSWORD')
           ]) {
-            stage('Release') {
-              exec 'npx semantic-release'
+            withNodeJs {
+              withComposer {
+                stage('Release') {
+                  exec 'npx semantic-release'
+                }
+              }
             }
           }
         }
