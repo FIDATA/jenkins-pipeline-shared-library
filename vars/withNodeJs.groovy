@@ -28,7 +28,7 @@ import hudson.AbortException
  * @return NodeJS version
  */
 String getNodeJsVersion() {
-  String nodeJsVersionOutput = exec('node --version', true)
+  final String nodeJsVersionOutput = exec('node --version', true)
   echo nodeJsVersionOutput
   (nodeJsVersionOutput =~ /^v(\S+)/).with { Matcher matcher ->
     matcher.find() ? matcher.group(1) : null
@@ -63,5 +63,12 @@ void call(Closure body) {
     }
   }
 
-  body.call()
+  final String home = getHome()
+
+  withEnv([
+    "NODE_MODULES=$home/.npm",
+    "NPM_PACKAGES=$home/.npm-packages/bin",
+  ]) {
+    body.call()
+  }
 }

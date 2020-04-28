@@ -28,7 +28,7 @@ import hudson.AbortException
  * @return Composer version
  */
 String getComposerVersion() {
-  String composerVersionOutput = exec('composer --version', true)
+  final String composerVersionOutput = exec('composer --version', true)
   echo composerVersionOutput
   (composerVersionOutput =~ /^Composer version (\S+)/).with { Matcher matcher ->
     matcher.find() ? matcher.group(1) : null

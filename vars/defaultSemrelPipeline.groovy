@@ -18,10 +18,10 @@
  * permissions and limitations under the License.
  */
 void call(final Map<String, Object> config = [:]) {
-  Map<String, Integer> timeouts = (Map<String, Integer>)config.getOrDefault('timeouts', [:])
+  final Map<String, Integer> timeouts = (Map<String, Integer>)config.getOrDefault('timeouts', [:])
 
-  String branchName = env.BRANCH_NAME
-  boolean isNotPR = !env.CHANGE_ID
+  final String branchName = env.BRANCH_NAME
+  final boolean isNotPR = !env.CHANGE_ID
 
   properties [
     disableConcurrentBuilds(),

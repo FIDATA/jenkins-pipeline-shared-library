@@ -28,9 +28,9 @@ import hudson.AbortException
  * @return PHP version
  */
 String getPhpVersion() {
-  String phpVersionOutput = exec('php --version', true)
+  final String phpVersionOutput = exec('php --version', true)
   echo phpVersionOutput
-  (phpVersionOutput =~ /^Php version (\S+)/).with { Matcher matcher ->
+  (phpVersionOutput =~ /^PHP (\S+)/).with { Matcher matcher ->
     matcher.find() ? matcher.group(1) : null
   }
 }
