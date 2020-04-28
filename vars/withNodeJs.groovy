@@ -51,12 +51,10 @@ void call(Closure body) {
     if (!isNodeJsInstalled) {
       echo 'Installing recent Node.js version...'
       if (isUnix()) {
-        ws {
-          sh """\
-            curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-            sudo apt-get --assume-yes install nodejs
-          """.stripIndent()
-        }
+        sh """\
+          curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+          sudo apt-get --assume-yes install nodejs
+        """.stripIndent()
       } else {
         throw new UnsupportedOperationException('Installation of Node.js under Windows is not supported yet')
       }
