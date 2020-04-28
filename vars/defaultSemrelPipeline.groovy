@@ -47,17 +47,18 @@ void call(final Map<String, Object> config = [:]) {
         gitAuthor()
       }
 
-      withEnv([
-        "ARTIFACTORY_URL=${ Artifactory.server('FIDATA').url }",
-      ]) {
-        timeout(time: timeouts.getOrDefault('Release', 1), unit: 'MINUTES') {
-          withCredentials([
-            usernameColonPassword(credentialsId: 'Artifactory', variable: 'ARTIFACTORY_USERNAME_PASSWORD')
-          ]) {
-            withNodeJs {
-              exec 'sudo npm install -g semantic-release @semantic-release/exec'
-              withComposer {
-                stage('Release') {
+      withNodeJs {
+        exec 'sudo npm install -g semantic-release @semantic-release/exec'
+        withComposer {
+          timeout(time: timeouts.getOrDefault('Release', 1), unit: 'MINUTES') {
+            stage('Release') {
+              withEnv([
+                "ARTIFACTORY_URL=${ Artifactory.server('FIDATA').url }",
+              ]) {
+                withCredentials([
+                  string(credentialsId: 'Github', variable: 'GITHUB_TOKEN'),
+                  usernameColonPassword(credentialsId: 'Artifactory', variable: 'ARTIFACTORY_USERNAME_PASSWORD'),
+                ]) {
                   exec 'semantic-release'
                 }
               }
