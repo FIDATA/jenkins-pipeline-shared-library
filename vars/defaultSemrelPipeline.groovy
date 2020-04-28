@@ -57,7 +57,7 @@ void call(final Map<String, Object> config = [:]) {
               ]) {
                 withCredentials([
                   string(credentialsId: 'Github', variable: 'GITHUB_TOKEN'),
-                  usernameColonPassword(credentialsId: 'Artifactory', variable: 'ARTIFACTORY_USERNAME_PASSWORD'),
+                  usernameColonPassword(credentialsId: 'Artifactory', variable: 'ARTIFACTORY_CREDENTIALS'),
                 ]) {
                   exec 'semantic-release'
                 }
