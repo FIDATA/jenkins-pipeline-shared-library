@@ -28,6 +28,7 @@ import com.github.zafarkhaja.semver.ParseException
  */
 String getComposerVersion() {
   String composerVersionOutput = exec('composer --version', true)
+  echo composerVersionOutput
   (composerVersionOutput =~ /^Composer version (\S+)/).with { Matcher matcher ->
     matcher.find() ? matcher.group(1) : null
   }
@@ -43,9 +44,9 @@ void call(Closure body) {
     lock('composer --version') {
       Boolean isComposerInstalled
       try {
-        isGpgInstalled = Version.valueOf(getComposerVersion())?.greaterThanOrEqualTo(Version.forIntegers(1, 0, 0))
+        isComposerInstalled = Version.valueOf(getComposerVersion())?.greaterThanOrEqualTo(Version.forIntegers(1, 0, 0))
       } catch (IllegalArgumentException | ParseException ignored) {
-        isGpgInstalled = false
+        isComposerInstalled = false
       }
       if (!isComposerInstalled) {
         echo 'Installing recent Composer version...'

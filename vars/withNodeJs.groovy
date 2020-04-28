@@ -28,6 +28,7 @@ import com.github.zafarkhaja.semver.ParseException
  */
 String getNodeJsVersion() {
   String nodeJsVersionOutput = exec('node --version', true)
+  echo nodeJsVersionOutput
   (nodeJsVersionOutput =~ /^v(\S+)/).with { Matcher matcher ->
     matcher.find() ? matcher.group(1) : null
   }
@@ -42,9 +43,9 @@ void call(Closure body) {
   lock('node --version') {
     Boolean isNodeJsInstalled
     try {
-      isGpgInstalled = Version.valueOf(getNodeJsVersion())?.greaterThanOrEqualTo(Version.forIntegers(10, 0, 0))
+      isNodeJsInstalled = Version.valueOf(getNodeJsVersion())?.greaterThanOrEqualTo(Version.forIntegers(10, 0, 0))
     } catch (IllegalArgumentException | ParseException ignored) {
-      isGpgInstalled = false
+      isNodeJsInstalled = false
     }
     if (!isNodeJsInstalled) {
       echo 'Installing recent Node.js version...'

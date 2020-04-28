@@ -28,6 +28,7 @@ import com.github.zafarkhaja.semver.ParseException
  */
 String getPhpVersion() {
   String phpVersionOutput = exec('php --version', true)
+  echo phpVersionOutput
   (phpVersionOutput =~ /^Php version (\S+)/).with { Matcher matcher ->
     matcher.find() ? matcher.group(1) : null
   }
@@ -42,9 +43,9 @@ void call(Closure body) {
   lock('php --version') {
     Boolean isPhpInstalled
     try {
-      isGpgInstalled = Version.valueOf(getPhpVersion())?.greaterThanOrEqualTo(Version.forIntegers(1, 0, 0))
+      isPhpInstalled = Version.valueOf(getPhpVersion())?.greaterThanOrEqualTo(Version.forIntegers(1, 0, 0))
     } catch (IllegalArgumentException | ParseException ignored) {
-      isGpgInstalled = false
+      isPhpInstalled = false
     }
     if (!isPhpInstalled) {
       echo 'Installing recent PHP version...'
