@@ -21,6 +21,7 @@ import java.util.regex.Matcher
 @Grab('com.github.zafarkhaja:java-semver:[0, 1[')
 import com.github.zafarkhaja.semver.Version
 import com.github.zafarkhaja.semver.ParseException
+import hudson.AbortException
 
 /**
  * Gets PHP version as String, e.g. {@code 1.2.3}
