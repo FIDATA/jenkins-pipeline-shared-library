@@ -58,6 +58,7 @@ void call(Closure body) {
             sh """\
               chmod +x $installComposerFilename
               sudo --set-home bash ./$installComposerFilename
+              sudo mv composer.phar /usr/local/bin/composer
             """.stripIndent()
           }
         } else {
