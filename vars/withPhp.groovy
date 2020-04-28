@@ -51,7 +51,7 @@ void call(Closure body) {
     if (!isPhpInstalled) {
       echo 'Installing recent PHP version...'
       if (isUnix()) {
-        sh 'sudo apt-get install php7.0-cli'
+        sh 'sudo apt-get --assume-yes install php7.0-cli'
       } else {
         throw new UnsupportedOperationException('Installation of PHP under Windows is not supported yet')
       }
