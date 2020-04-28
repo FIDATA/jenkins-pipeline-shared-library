@@ -44,7 +44,7 @@ void call(Closure body) {
     Boolean isNodeJsInstalled
     try {
       isNodeJsInstalled = Version.valueOf(getNodeJsVersion())?.greaterThanOrEqualTo(Version.forIntegers(10, 0, 0))
-    } catch (IllegalArgumentException | ParseException ignored) {
+    } catch (AbortException | IllegalArgumentException | ParseException ignored) {
       isNodeJsInstalled = false
     }
     if (!isNodeJsInstalled) {

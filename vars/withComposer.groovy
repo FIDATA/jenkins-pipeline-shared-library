@@ -45,7 +45,7 @@ void call(Closure body) {
       Boolean isComposerInstalled
       try {
         isComposerInstalled = Version.valueOf(getComposerVersion())?.greaterThanOrEqualTo(Version.forIntegers(1, 0, 0))
-      } catch (IllegalArgumentException | ParseException ignored) {
+      } catch (AbortException | IllegalArgumentException | ParseException ignored) {
         isComposerInstalled = false
       }
       if (!isComposerInstalled) {

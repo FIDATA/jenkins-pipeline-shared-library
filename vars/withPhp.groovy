@@ -44,7 +44,7 @@ void call(Closure body) {
     Boolean isPhpInstalled
     try {
       isPhpInstalled = Version.valueOf(getPhpVersion())?.greaterThanOrEqualTo(Version.forIntegers(1, 0, 0))
-    } catch (IllegalArgumentException | ParseException ignored) {
+    } catch (AbortException | IllegalArgumentException | ParseException ignored) {
       isPhpInstalled = false
     }
     if (!isPhpInstalled) {
