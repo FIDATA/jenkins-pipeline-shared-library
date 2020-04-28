@@ -44,7 +44,7 @@ void call(Closure body) {
   lock('php --version') {
     Boolean isPhpInstalled
     try {
-      isPhpInstalled = Version.valueOf(getPhpVersion())?.greaterThanOrEqualTo(Version.forIntegers(1, 0, 0))
+      isPhpInstalled = Version.valueOf(getPhpVersion())?.greaterThanOrEqualTo(Version.forIntegers(7, 0, 0))
     } catch (AbortException | IllegalArgumentException | ParseException ignored) {
       isPhpInstalled = false
     }
