@@ -63,12 +63,5 @@ void call(Closure body) {
     }
   }
 
-  final String home = getHome()
-
-  withEnv([
-    "NODE_MODULES=$home/.npm",
-    "NPM_PACKAGES=$home/.npm-packages/bin",
-  ]) {
-    body.call()
-  }
+  body.call()
 }
