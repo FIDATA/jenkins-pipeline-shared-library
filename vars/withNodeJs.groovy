@@ -43,7 +43,7 @@ void call(Closure body) {
     Boolean isNodeJsInstalled
     try {
       isGpgInstalled = Version.valueOf(getNodeJsVersion())?.greaterThanOrEqualTo(Version.forIntegers(10, 0, 0))
-    } catch (ParseException ignored) {
+    } catch (IllegalArgumentException | ParseException ignored) {
       isGpgInstalled = false
     }
     if (!isNodeJsInstalled) {

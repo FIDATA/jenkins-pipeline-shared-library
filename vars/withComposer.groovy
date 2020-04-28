@@ -43,7 +43,7 @@ void call(Closure body) {
     Boolean isComposerInstalled
     try {
       isGpgInstalled = Version.valueOf(getComposerVersion())?.greaterThanOrEqualTo(Version.forIntegers(1, 0, 0))
-    } catch (ParseException ignored) {
+    } catch (IllegalArgumentException | ParseException ignored) {
       isGpgInstalled = false
     }
     if (!isComposerInstalled) {
