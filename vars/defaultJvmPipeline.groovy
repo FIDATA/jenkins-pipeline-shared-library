@@ -35,7 +35,7 @@ void call(final Map<String, Object> config) {
   boolean isNotPR = !env.CHANGE_ID
   boolean isMasterAndNotPR = isMaster && isNotPR
 
-  if (isMaster && isNotPR) {
+  if (isMasterAndNotPR) {
     properties([
       parameters([
         booleanParam(defaultValue: false, description: 'Whether to release a new version', name: 'shouldRelease'),
