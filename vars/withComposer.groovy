@@ -27,7 +27,7 @@ import com.github.zafarkhaja.semver.ParseException
  * @return Composer version
  */
 String getComposerVersion() {
-  String composerVersionOutput = exec('node --version', true)
+  String composerVersionOutput = exec('composer --version', true)
   (composerVersionOutput =~ /^Composer version (\S+)/).with { Matcher matcher ->
     matcher.find() ? matcher.group(1) : null
   }
@@ -38,30 +38,32 @@ void call(Closure body) {
    * This should be done in fidata_build_toolset.
    * <grv87 2018-09-20>
    */
-  echo 'Determining installed GnuPG version...'
-  lock('node --version') {
-    Boolean isComposerInstalled
-    try {
-      isGpgInstalled = Version.valueOf(getComposerVersion())?.greaterThanOrEqualTo(Version.forIntegers(1, 0, 0))
-    } catch (IllegalArgumentException | ParseException ignored) {
-      isGpgInstalled = false
-    }
-    if (!isComposerInstalled) {
-      echo 'Installing recent Composer version...'
-      if (isUnix()) {
-        ws {
-          String installComposerFilename = 'install-composer.sh'
-          writeFile file: installComposerFilename, text: libraryResource("org/fidata/gpg/$installComposerFilename"), encoding: 'UTF-8'
-          sh """\
-            chmod +x $installComposerFilename
-            sudo --set-home bash ./$installComposerFilename
-          """.stripIndent()
+  withPhp {
+    echo 'Determining installed Composer version...'
+    lock('composer --version') {
+      Boolean isComposerInstalled
+      try {
+        isGpgInstalled = Version.valueOf(getComposerVersion())?.greaterThanOrEqualTo(Version.forIntegers(1, 0, 0))
+      } catch (IllegalArgumentException | ParseException ignored) {
+        isGpgInstalled = false
+      }
+      if (!isComposerInstalled) {
+        echo 'Installing recent Composer version...'
+        if (isUnix()) {
+          ws {
+            String installComposerFilename = 'install-composer.sh'
+            writeFile file: installComposerFilename, text: libraryResource("org/fidata/gpg/$installComposerFilename"), encoding: 'UTF-8'
+            sh """\
+              chmod +x $installComposerFilename
+              sudo --set-home bash ./$installComposerFilename
+            """.stripIndent()
+          }
+        } else {
+          throw new UnsupportedOperationException('Installation of Composer under Windows is not supported yet')
         }
-      } else {
-        throw new UnsupportedOperationException('Installation of Composer under Windows is not supported yet')
       }
     }
-  }
 
-  body.call()
+    body.call()
+  }
 }
