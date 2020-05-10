@@ -55,7 +55,7 @@ void call(final Map<String, Object> config = [:]) {
       final String scopeDir = "${ pwd() }/.scope"
 
       withNodeJs(artifactoryServerId) { ->
-        exec 'sudo npm install -g semantic-release @fidata/semantic-release-composer-artifactory-plugin'
+        exec 'sudo --preserve-env npm install -g semantic-release @fidata/semantic-release-composer-artifactory-plugin'
         withComposer("$scopeDir/.jfrog", artifactoryServerId, githubCredentialId) { ->
           withGpgScope("$scopeDir/.gnupg", keyCredentialId, passphraseCredentialId, false) { ->
             withArtifactoryCli(artifactoryServerId) { ->
