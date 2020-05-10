@@ -38,7 +38,7 @@ String getNodeJsVersion() {
   }
 }
 
-void call(String artifactoryServerId, Closure body) {
+void call(String scopeConfigFile, String artifactoryServerId, Closure body) {
   final ArtifactoryServer server = Artifactory.server(artifactoryServerId)
   final URL url = new URL(server.url)
 
@@ -67,20 +67,26 @@ void call(String artifactoryServerId, Closure body) {
     }
   }
 
+  final String npmrc = [
+    "registry=$url/api/npm/npm/",
+    "@fidata:registry=$url/api/npm/npm-local/",
+    "@sourcemetadata:registry=$url/api/npm/npm-local/",
+    "//$url.host$url.path/api/npm/npm/:username=\${ ARTIFACTORY_USERNAME }",
+    "//$url.host$url.path/api/npm/npm/:_password=\${ ARTIFACTORY_PASSWORD_BASE64 }",
+    "//$url.host$url.path/api/npm/npm/:email=jenkins@fidata.org",
+    "//$url.host$url.path/api/npm/npm/:always-auth=true",
+    "//$url.host$url.path/api/npm/npm-local/:username=\${ ARTIFACTORY_USERNAME }",
+    "//$url.host$url.path/api/npm/npm-local/:_password=\${ ARTIFACTORY_PASSWORD_BASE64 }",
+    "//$url.host$url.path/api/npm/npm-local/:email=jenkins@fidata.org", // TODO
+    "//$url.host$url.path/api/npm/npm-local/:always-auth=true",
+  ]
+  writeFile file: scopeConfigFile, text: npmrc.join('\n')
   withEnv([
-    "npm_config_registry=$url/api/npm/npm/",
-    "npm_config_@fidata:registry=$url/api/npm/npm-local/",
-    "npm_config_@sourcemetadata:registry=$url/api/npm/npm-local/",
-    "npm_config_//$url.host$url.path/api/npm/npm-local/:email=jenkins@fidata.org", // TODO
-    "npm_config_//$url.host$url.path/api/npm/npm-local/:always-auth=true",
-    "npm_config_//$url.host$url.path/api/npm/npm/:email=jenkins@fidata.org",
-    "npm_config_//$url.host$url.path/api/npm/npm/:always-auth=true",
+    "NPM_CONFIG_USERCONFIG=$scopeConfigFile",
   ]) { ->
     withSecretEnv([
-      [var: "npm_config_//$url.host$url.path/api/npm/npm-local/:username", password: server.username],
-      [var: "npm_config_//$url.host$url.path/api/npm/npm-local/:_password", password: server.password.bytes.encodeBase64().toString()],
-      [var: "npm_config_//$url.host$url.path/api/npm/npm/:username", password: server.username],
-      [var: "npm_config_//$url.host$url.path/api/npm/npm/:_password", password: server.password.bytes.encodeBase64().toString()],
+      [var: 'ARTIFACTORY_USERNAME', password: server.username],
+      [var: 'ARTIFACTORY_PASSWORD_BASE64', password: server.password.bytes.encodeBase64().toString()],
     ]) { ->
       body.call()
     }
