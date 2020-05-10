@@ -1,6 +1,6 @@
 #!/usr/bin/env groovy
 /*
- * Default Jenkins pipeline for semantic-release
+ * Jenkins pipeline running semantic-release with Composer
  * Copyright ©  Basil Peace
  *
  * This file is part of jenkins-pipeline-shared-library.
@@ -27,9 +27,9 @@ void call(final Map<String, Object> config = [:]) {
     disableConcurrentBuilds(),
   ]
 
-  node {
-    ansiColor {
-      stage('Checkout') {
+  node { ->
+    ansiColor { ->
+      stage('Checkout') { ->
         List<Map<String, ? extends Serializable>> extensions = [
           [$class: 'WipeWorkspace'],
           [$class: 'CloneOption', noTags: false, shallow: true /* TOTEST */],
@@ -47,19 +47,27 @@ void call(final Map<String, Object> config = [:]) {
         gitAuthor()
       }
 
-      withNodeJs {
-        exec 'sudo npm install -g semantic-release @semantic-release/exec'
-        withComposer {
-          timeout(time: timeouts.getOrDefault('Release', 1), unit: 'MINUTES') {
-            stage('Release') {
-              withEnv([
-                "ARTIFACTORY_URL=${ Artifactory.server('FIDATA').url }",
-              ]) {
-                withCredentials([
-                  string(credentialsId: 'Github', variable: 'GITHUB_TOKEN'),
-                  usernameColonPassword(credentialsId: 'Artifactory', variable: 'ARTIFACTORY_CREDENTIALS'),
-                ]) {
-                  exec 'semantic-release'
+      final String artifactoryServerId = 'FIDATA'
+      final String githubCredentialId = 'GitHub'
+
+      final String gpgScope = "${ pwd() }/.scoped-gpg"
+      final String keyCredentialId = 'GPG'
+      final String passphraseCredentialId = 'GPG_KEY_PASSWORD'
+
+      final String scopeDir = '.scope'
+
+      withNodeJs(artifactoryServerId) { ->
+        exec 'sudo npm install -g semantic-release @fidata/semantic-release-composer-artifactory-plugin'
+        withComposer("$scopeDir/.jfrog", artifactoryServerId, githubCredentialId) { ->
+          withGpgScope("$scopeDir/.gnupg", keyCredentialId, passphraseCredentialId, false) { ->
+            withArtifactoryCli(artifactoryServerId) { ->
+              stage('Release') { ->
+                timeout(time: timeouts.getOrDefault('Release', 1), unit: 'MINUTES') { ->
+                  withCredentials([
+                    string(credentialsId: githubCredentialId, variable: 'GITHUB_TOKEN'),
+                  ]) { ->
+                    exec 'semantic-release'
+                  }
                 }
               }
             }

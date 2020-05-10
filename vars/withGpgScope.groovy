@@ -22,8 +22,6 @@ import static org.fidata.gpg.GpgUtils.GPG_AGENT_CONF_FILE_NAME
 import static org.fidata.gpg.GpgUtils.getKeyUsages
 import com.cloudbees.plugins.credentials.CredentialsProvider
 import org.jenkinsci.plugins.plaincredentials.FileCredentials
-import java.security.Security
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 @Grab('org.bouncycastle:bcpg-jdk15on:[1, 2[')
 import org.bouncycastle.openpgp.PGPSecretKeyRing
 import org.bouncycastle.openpgp.PGPSecretKey
@@ -76,7 +74,7 @@ String getGpgHome() {
   }
 }
 
-void call(String gpgScope, String keyCredentialId, String passphraseCredentialId, Closure body) {
+void call(String gpgScope, String keyCredentialId, String passphraseCredentialId, boolean legacy = true, Closure body) {
   try {
     /*
      * WORKAROUND:
@@ -211,17 +209,16 @@ void call(String gpgScope, String keyCredentialId, String passphraseCredentialId
         '''.stripIndent()
       }
 
-      withCredentials([string(credentialsId: passphraseCredentialId, variable: 'GPG_KEY_PASSPHRASE')]) {
-        echo 'Importing GPG key...'
-        ws {
+      dir(gpgScope) {
+        withCredentials([string(credentialsId: passphraseCredentialId, variable: 'GPG_KEY_PASSPHRASE')]) {
+          echo 'Importing GPG key...'
           withCredentials([file(credentialsId: keyCredentialId, variable: 'GPG_KEY_FILE')]) {
             exec "gpg --passphrase \"${ e('GPG_KEY_PASSPHRASE') }\" --import \"${ e('GPG_KEY_FILE') }\""
           }
-        }
-
-        echo 'Exporting GPG secret keys into legacy secring...'
-        dir(gpgScope) {
-          exec "gpg --passphrase \"${ e('GPG_KEY_PASSPHRASE') }\" --output secring.gpg --export-secret-keys"
+          if (legacy) {
+            echo 'Exporting GPG secret keys into legacy secring...'
+            exec "gpg --passphrase \"${ e('GPG_KEY_PASSPHRASE') }\" --output secring.gpg --export-secret-keys"
+          }
         }
       }
 

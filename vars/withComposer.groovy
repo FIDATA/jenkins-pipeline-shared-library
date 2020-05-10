@@ -22,6 +22,8 @@ import java.util.regex.Matcher
 import com.github.zafarkhaja.semver.Version
 import com.github.zafarkhaja.semver.ParseException
 import hudson.AbortException
+import groovy.json.JsonBuilder
+import groovy.json.JsonOutput
 
 /**
  * Gets Composer version as String, e.g. {@code 1.2.3}
@@ -35,14 +37,17 @@ String getComposerVersion() {
   }
 }
 
-void call(Closure body) {
+void call(String artifactoryServerId, String githubCredentialId, Closure body) {
   /*
    * This should be done in fidata_build_toolset.
    * <grv87 2018-09-20>
    */
-  withPhp {
+  withPhp { ->
+    final ArtifactoryServer server = Artifactory.server(artifactoryServerId)
+    final URL url = new URL(server.url)
+
     echo 'Determining installed Composer version...'
-    lock('composer --version') {
+    lock('composer --version') { ->
       Boolean isComposerInstalled
       try {
         isComposerInstalled = Version.valueOf(getComposerVersion())?.greaterThanOrEqualTo(Version.forIntegers(1, 0, 0))
@@ -52,21 +57,61 @@ void call(Closure body) {
       if (!isComposerInstalled) {
         echo 'Installing recent Composer version...'
         if (isUnix()) {
-          ws {
+          ws { ->
             String installComposerFilename = 'install-composer.sh'
-            writeFile file: installComposerFilename, text: libraryResource("org/fidata/gpg/$installComposerFilename"), encoding: 'UTF-8'
+            writeFile file: installComposerFilename, text: libraryResource("org/fidata/composer/$installComposerFilename"), encoding: 'UTF-8'
             sh """\
               chmod +x $installComposerFilename
               sudo --set-home bash ./$installComposerFilename
               sudo mv composer.phar /usr/local/bin/composer
             """.stripIndent()
+            Map<String, ?> config = [
+              repositories: [
+                [
+                  type: 'composer',
+                  url: "$url/api/composer/composer-local",
+                ],
+                [
+                  type: 'composer',
+                  url: "$url/api/composer/org.packagist",
+                ],
+                [
+                  packagist: false,
+                ],
+              ],
+            ]
+            writeFile file: "${ getHome() }/.composer/config.json", text: JsonOutput.toJson(config), encoding: 'UTF-8'
           }
         } else {
           throw new UnsupportedOperationException('Installation of Composer under Windows is not supported yet')
         }
       }
     }
-
-    body.call()
+    // Resolver credentials enough here
+    withSecretEnv([
+      [var: 'ARTIFACTORY_USERNAME', password: server.username],
+      [var: 'ARTIFACTORY_PASSWORD', password: server.password],
+    ]) { ->
+      withCredentials([
+        string(variable: 'GITHUB_TOKEN', credentialsId: githubCredentialId),
+      ]) { ->
+        final Map<String, ?> composerAuth = [
+          'http-basic': [
+            (url.host): [
+              'username': env.ARTIFACTORY_USERNAME,
+              'password': env.ARTIFACTORY_PASSWORD,
+            ],
+          ],
+          'github-oauth': [
+            'github.com': env.GITHUB_TOKEN,
+          ],
+        ]
+        withEnv([
+          "COMPOSER_AUTH=${ new JsonBuilder(composerAuth).toString() }",
+        ]) { ->
+          body.call()
+        }
+      }
+    }
   }
 }

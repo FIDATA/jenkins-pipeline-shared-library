@@ -35,13 +35,16 @@ String getNodeJsVersion() {
   }
 }
 
-void call(Closure body) {
+void call(String artifactoryServerId, Closure body) {
+  final ArtifactoryServer server = Artifactory.server(artifactoryServerId)
+  final URL url = new URL(server.url)
+
   /*
    * This should be done in fidata_build_toolset.
    * <grv87 2018-09-20>
    */
   echo 'Determining installed Node.js version...'
-  lock('node --version') {
+  lock('node --version') { ->
     Boolean isNodeJsInstalled
     try {
       isNodeJsInstalled = Version.valueOf(getNodeJsVersion())?.greaterThanOrEqualTo(Version.forIntegers(10, 0, 0))
@@ -51,15 +54,32 @@ void call(Closure body) {
     if (!isNodeJsInstalled) {
       echo 'Installing recent Node.js version...'
       if (isUnix()) {
-        sh """\
+        sh '''\
           curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
           sudo apt-get --assume-yes install nodejs
-        """.stripIndent()
+        '''.stripIndent()
       } else {
         throw new UnsupportedOperationException('Installation of Node.js under Windows is not supported yet')
       }
     }
   }
 
-  body.call()
+  withEnv([
+    "npm_config_registry=$url/api/npm/npm/",
+    "npm_config_@fidata:registry=$url/api/npm/npm-local/",
+    "npm_config_@sourcemetadata:registry=$url/api/npm/npm-local/",
+    "npm_config_//$url.host$url.path/api/npm/npm-local/:email=jenkins@fidata.org", // TODO
+    "npm_config_//$url.host$url.path/api/npm/npm-local/:always-auth=true",
+    "npm_config_//$url.host$url.path/api/npm/npm/:email=jenkins@fidata.org",
+    "npm_config_//$url.host$url.path/api/npm/npm/:always-auth=true",
+  ]) { ->
+    withSecretEnv([
+      [var: "npm_config_//$url.host$url.path/api/npm/npm-local/:username", password: server.username],
+      [var: "npm_config_//$url.host$url.path/api/npm/npm-local/:_password", password: server.password.bytes.encodeBase64().toString()],
+      [var: "npm_config_//$url.host$url.path/api/npm/npm/:username", password: server.username],
+      [var: "npm_config_//$url.host$url.path/api/npm/npm/:_password", password: server.password.bytes.encodeBase64().toString()],
+    ]) { ->
+      body.call()
+    }
+  }
 }

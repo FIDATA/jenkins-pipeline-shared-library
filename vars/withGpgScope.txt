@@ -8,6 +8,7 @@ Parameters:
 *	`gpgScope`: Directory where to install the key. Should not exist before run
 *	`keyCredentialId`: Key credential id. Should be of File type
 *	`passphraseCredentialId`: Passphrase credential id. Should be of String type
+*	`legacy`: Export keys into legacy secring. Should be of boolean type. Optional, by default true for BC
 *	`body`: Block to execute
 
 1.	It copies existing configuration files (`*.conf`) from current GPG home to scoped directory.

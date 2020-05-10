@@ -41,7 +41,7 @@ void call(Closure body) {
    * <grv87 2018-09-20>
    */
   echo 'Determining installed PHP version...'
-  lock('php --version') {
+  lock('php --version') { ->
     Boolean isPhpInstalled
     try {
       isPhpInstalled = Version.valueOf(getPhpVersion())?.greaterThanOrEqualTo(Version.forIntegers(7, 0, 0))
@@ -51,12 +51,12 @@ void call(Closure body) {
     if (!isPhpInstalled) {
       echo 'Installing recent PHP version...'
       if (isUnix()) {
-        sh 'sudo apt-get --assume-yes install php7.0-cli'
+        sh 'sudo apt-get --assume-yes install php7.0-cli php7.0-mbstring php7.0-zip php-ctype' // TOTEST // TODO: Move list of extensions to parameter ?
       } else {
         throw new UnsupportedOperationException('Installation of PHP under Windows is not supported yet')
       }
     }
   }
 
-  body.call()
+  body()
 }
