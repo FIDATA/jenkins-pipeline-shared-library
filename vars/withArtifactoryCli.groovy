@@ -17,17 +17,19 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+
 import static org.jfrog.hudson.util.RepositoriesUtils.getArtifactoryServers
+@Grab('com.github.zafarkhaja:java-semver:[0, 1[')
+import com.github.zafarkhaja.semver.ParseException
+@Grab('com.github.zafarkhaja:java-semver:[0, 1[')
+import com.github.zafarkhaja.semver.Version
+import hudson.AbortException
+import java.util.regex.Matcher
+import org.jenkinsci.plugins.credentialsbinding.MultiBinding
+import org.jfrog.hudson.ArtifactoryServer
 import org.jfrog.hudson.CredentialsConfig
 import org.jfrog.hudson.util.Credentials
 import org.jfrog.hudson.util.plugins.PluginsUtils
-import org.jfrog.hudson.ArtifactoryServer
-import java.util.regex.Matcher
-@Grab('com.github.zafarkhaja:java-semver:[0, 1[')
-import com.github.zafarkhaja.semver.Version
-import com.github.zafarkhaja.semver.ParseException
-import hudson.AbortException
-import org.jenkinsci.plugins.credentialsbinding.MultiBinding
 
 /**
  * Gets Artifactory version as String, e.g. {@code 1.2.3}

@@ -17,11 +17,14 @@
  * implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-import java.util.regex.Matcher
+
+@Grab('com.github.zafarkhaja:java-semver:[0, 1[')
+import com.github.zafarkhaja.semver.ParseException
 @Grab('com.github.zafarkhaja:java-semver:[0, 1[')
 import com.github.zafarkhaja.semver.Version
-import com.github.zafarkhaja.semver.ParseException
 import hudson.AbortException
+import java.util.regex.Matcher
+import org.jfrog.hudson.pipeline.common.types.ArtifactoryServer
 
 /**
  * Gets NodeJS version as String, e.g. {@code 1.2.3}
