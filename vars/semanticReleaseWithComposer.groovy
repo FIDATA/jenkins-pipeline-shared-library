@@ -49,12 +49,10 @@ void call(final Map<String, Object> config = [:]) {
 
       final String artifactoryServerId = 'FIDATA'
       final String githubCredentialId = 'GitHub'
-
-      final String gpgScope = "${ pwd() }/.scoped-gpg"
       final String keyCredentialId = 'GPG'
       final String passphraseCredentialId = 'GPG_KEY_PASSWORD'
 
-      final String scopeDir = '.scope'
+      final String scopeDir = "${ pwd() }/.scope"
 
       withNodeJs(artifactoryServerId) { ->
         exec 'sudo npm install -g semantic-release @fidata/semantic-release-composer-artifactory-plugin'
