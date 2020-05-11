@@ -10,7 +10,7 @@ import org.jfrog.hudson.util.plugins.PluginsUtils
  * {@link org.jfrog.hudson.pipeline.common.executors.GetArtifactoryServerExecutor} gives us resolving credentials only
  */
 void call(String serverId, String urlEnvVar, String usernameEnvVar, String passwordEnvVar, boolean deployment, Closure body) {
-  final ArtifactoryServer server = getArtifactoryServers().find { ArtifactoryServer server ->
+  /*final ArtifactoryServer server = getArtifactoryServers().find { ArtifactoryServer server ->
     server.name == serverId
   }
   if (server == null) {
@@ -36,5 +36,5 @@ void call(String serverId, String urlEnvVar, String usernameEnvVar, String passw
         body.call()
       }
     }
-  }
+  }*/
 }
