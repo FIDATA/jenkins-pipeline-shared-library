@@ -4,6 +4,7 @@ import static org.jfrog.hudson.util.RepositoriesUtils.getArtifactoryServers
 import groovy.transform.CompileStatic
 import org.jfrog.hudson.ArtifactoryServer
 import org.jfrog.hudson.CredentialsConfig
+import hudson.model.Item
 
 /**
  * The whole purpose of this class is to get deployer credentials.
