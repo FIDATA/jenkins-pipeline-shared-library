@@ -35,9 +35,9 @@ void callWithZeroOrOneArg(Serializable arg, Closure closure) {
   }
 }
 
-void call(String name, String type, String path, String envVarName, Template envVarTemplate = new GStringTemplateEngine().createTemplate('$value'), Closure body, Closure configClosure, Closure finalizeClosure = null) {
+void call(String name, String type, String path, String envVarName, String envVarTemplate = '$value', Closure body, Closure configClosure, Closure finalizeClosure = null) {
   final String title = "$name scope $type"
-  final String envVarValue = envVarTemplate.make(value: path)
+  final String envVarValue = new GStringTemplateEngine().createTemplate(envVarTemplate).make(value: path)
   path = Paths.get(pwd(), '.scope').resolve(path).toString()
 
   final String currEnvVarValue = env[envVarName]
