@@ -1,10 +1,10 @@
 package org.fidata.artifactory
 
 import static org.jfrog.hudson.util.RepositoriesUtils.getArtifactoryServers
+import hudson.model.Item
 import groovy.transform.CompileStatic
 import org.jfrog.hudson.ArtifactoryServer
 import org.jfrog.hudson.CredentialsConfig
-import hudson.model.Item
 
 /**
  * The whole purpose of this class is to get deployer credentials.
@@ -13,7 +13,7 @@ import hudson.model.Item
  */
 @CompileStatic
 /*final*/ class ArtifactoryUtils {
-  static void replaceCredentialsWithDeployment(org.jfrog.hudson.pipeline.common.types.ArtifactoryServer artifactoryServer, Item item) {
+  static org.jfrog.hudson.pipeline.common.types.ArtifactoryServer replaceCredentialsWithDeployment(org.jfrog.hudson.pipeline.common.types.ArtifactoryServer artifactoryServer, Item item) {
     final String serverId = artifactoryServer.serverName
     final ArtifactoryServer server = getArtifactoryServers().find { ArtifactoryServer server ->
       server.name == serverId
@@ -24,6 +24,7 @@ import hudson.model.Item
     final CredentialsConfig credentialsConfig = server.deployerCredentialsConfig
     artifactoryServer.username = credentialsConfig.provideUsername(item)
     artifactoryServer.password = credentialsConfig.providePassword(item)
+    artifactoryServer
   }
 
   /*private ArtifactoryUtils() {
