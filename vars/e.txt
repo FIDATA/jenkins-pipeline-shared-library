@@ -7,7 +7,7 @@ Parameters:
 
 Usage examples:
 ```
-node {
+node { ->
 	if (isUnix()) {
 	  assert e('HOME') == '$HOME'
 	} else {

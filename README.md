@@ -17,7 +17,7 @@ Steps:
 *   `e` — Adds prefix and/or suffix appropriate for this node
     to environment variable name so that it can be used in command line
 
-*   `withGpgScope` — Creates temporal (scoped) GPG home
+*   `withGpg` — Creates temporal (scoped) GPG home
     and imports GPG key from specified Jenkins credential there.
 
     Original idea goes to https://github.com/indutny/scoped-gpg

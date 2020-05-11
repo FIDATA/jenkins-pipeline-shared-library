@@ -18,15 +18,16 @@
  * permissions and limitations under the License.
  */
 
+import com.cloudbees.plugins.credentials.CredentialsProvider
 @Grab('com.github.zafarkhaja:java-semver:[0, 1[')
 import com.github.zafarkhaja.semver.ParseException
 @Grab('com.github.zafarkhaja:java-semver:[0, 1[')
 import com.github.zafarkhaja.semver.Version
-import groovy.json.JsonBuilder
-import groovy.json.JsonOutput
 import hudson.AbortException
+import hudson.util.Secret
+import java.nio.file.Paths
 import java.util.regex.Matcher
-import org.jfrog.hudson.pipeline.common.types.ArtifactoryServer
+import org.jenkinsci.plugins.plaincredentials.StringCredentials
 
 /**
  * Gets Composer version as String, e.g. {@code 1.2.3}
@@ -46,9 +47,6 @@ void call(String artifactoryServerId, String githubCredentialId, Closure body) {
    * <grv87 2018-09-20>
    */
   withPhp { ->
-    final ArtifactoryServer server = Artifactory.server(artifactoryServerId)
-    final URL url = new URL(server.url)
-
     echo 'Determining installed Composer version...'
     lock('composer --version') { ->
       Boolean isComposerInstalled
@@ -68,37 +66,41 @@ void call(String artifactoryServerId, String githubCredentialId, Closure body) {
               sudo --set-home bash ./$installComposerFilename
               sudo mv composer.phar /usr/local/bin/composer
             """.stripIndent()
-            Map<String, ?> config = [
-              repositories: [
-                [
-                  type: 'composer',
-                  url: "$url/api/composer/composer-local",
-                ],
-                [
-                  type: 'composer',
-                  url: "$url/api/composer/org.packagist",
-                ],
-                [
-                  packagist: false,
-                ],
-              ],
-            ]
-            writeFile file: "${ getHome() }/.composer/config.json", text: JsonOutput.toJson(config), encoding: 'UTF-8'
           }
         } else {
           throw new UnsupportedOperationException('Installation of Composer under Windows is not supported yet')
         }
       }
     }
-    // Resolver credentials enough here
-    withSecretEnv([
-      [var: 'ARTIFACTORY_USERNAME', password: server.username],
-      [var: 'ARTIFACTORY_PASSWORD', password: server.password],
-    ]) { ->
-      withCredentials([
-        string(variable: 'GITHUB_TOKEN', credentialsId: githubCredentialId),
-      ]) { ->
-        final Map<String, ?> composerAuth = [
+    withScope('Composer', 'dir', Paths.get('.composer') /* TOTHINK */, 'COMPOSER_HOME', body) { ->
+      withArtifactory(artifactoryServerId, 'ARTIFACTORY_URL', 'ARTIFACTORY_USERNAME', 'ARTIFACTORY_PASSWORD', false) { ->
+        final URL url = new URL(env.ARTIFACTORY_URL)
+
+        echo "Writing $env.COMPOSER_HOME/config.json..."
+        final Map<String, ?> config = [
+          repositories: [
+            [
+              type: 'composer',
+              url: "$url/api/composer/composer-local",
+            ],
+            [
+              type: 'composer',
+              url: "$url/api/composer/org.packagist",
+            ],
+            [
+              packagist: false,
+            ],
+          ],
+        ]
+        writeJSON file: "$env.COMPOSER_HOME/config.json", json: config
+
+        echo "Writing $env.COMPOSER_HOME/auth.json..."
+        StringCredentials credentials = CredentialsProvider.findCredentialById(
+          githubCredentialId,
+          StringCredentials,
+          currentBuild.rawBuild
+        )
+        final Map<String, ?> auth = [
           'http-basic': [
             (url.host): [
               'username': env.ARTIFACTORY_USERNAME,
@@ -106,15 +108,10 @@ void call(String artifactoryServerId, String githubCredentialId, Closure body) {
             ],
           ],
           'github-oauth': [
-            'github.com': env.GITHUB_TOKEN,
+            'github.com': Secret.toString(credentials.secret),
           ],
         ]
-        withEnv([
-          "COMPOSER_AUTH=${ new JsonBuilder(composerAuth).toString() }",
-        ]) { ->
-          body.call()
-        }
-      }
+        writeJSON file: "$env.COMPOSER_HOME/auth.json", json: auth
     }
   }
 }

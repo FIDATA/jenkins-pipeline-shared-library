@@ -5,7 +5,7 @@ Current version is able to install GnuPG automatically.
 This feature will be removed as soon as https://github.com/FIDATA/infrastructure/issues/83 will be implemented.
 
 Parameters:
-*	`gpgScope`: Directory where to install the key. Should not exist before run
+*	`artifactoryServerId`: Artifactory server id (to resolve required Java/Groovy libraries)
 *	`keyCredentialId`: Key credential id. Should be of File type
 *	`passphraseCredentialId`: Passphrase credential id. Should be of String type
 *	`legacy`: Export keys into legacy secring. Should be of boolean type. Optional, by default true for BC
@@ -24,9 +24,9 @@ Parameters:
 
 Usage example:
 ```
-node {
-  withGpgScope("${ pwd() }/gnupg", 'GPGKey', 'GPGKeyPassphrase') { fingerprint ->
-  	stage('Print fingerprint') {
+node { ->
+  withGpg('GPGKey', 'GPGKeyPassphrase') { fingerprint ->
+    stage('Print fingerprint') { ->
       sh "echo $fingerprint"
     }
   }

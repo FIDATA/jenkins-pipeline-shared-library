@@ -22,9 +22,10 @@
 import com.github.zafarkhaja.semver.ParseException
 @Grab('com.github.zafarkhaja:java-semver:[0, 1[')
 import com.github.zafarkhaja.semver.Version
+import groovy.text.StreamingTemplateEngine
 import hudson.AbortException
+import java.nio.file.Paths
 import java.util.regex.Matcher
-import org.jfrog.hudson.pipeline.common.types.ArtifactoryServer
 
 /**
  * Gets NodeJS version as String, e.g. {@code 1.2.3}
@@ -38,10 +39,7 @@ String getNodeJsVersion() {
   }
 }
 
-void call(String scopeConfigFile, String artifactoryServerId, Closure body) {
-  final ArtifactoryServer server = Artifactory.server(artifactoryServerId)
-  final URL url = new URL(server.url)
-
+void call(String artifactoryServerId, boolean deployment = false, Closure body) {
   /*
    * This should be done in fidata_build_toolset.
    * <grv87 2018-09-20>
@@ -67,28 +65,17 @@ void call(String scopeConfigFile, String artifactoryServerId, Closure body) {
     }
   }
 
-  final String npmrc = [
-    "registry=$url/api/npm/npm/",
-    "@fidata:registry=$url/api/npm/npm-local/",
-    "@sourcemetadata:registry=$url/api/npm/npm-local/",
-    "//$url.host$url.path/api/npm/npm/:username=\${ ARTIFACTORY_USERNAME }",
-    "//$url.host$url.path/api/npm/npm/:_password=\${ ARTIFACTORY_PASSWORD_BASE64 }",
-    "//$url.host$url.path/api/npm/npm/:email=jenkins@fidata.org",
-    "//$url.host$url.path/api/npm/npm/:always-auth=true",
-    "//$url.host$url.path/api/npm/npm-local/:username=\${ ARTIFACTORY_USERNAME }",
-    "//$url.host$url.path/api/npm/npm-local/:_password=\${ ARTIFACTORY_PASSWORD_BASE64 }",
-    "//$url.host$url.path/api/npm/npm-local/:email=jenkins@fidata.org", // TODO
-    "//$url.host$url.path/api/npm/npm-local/:always-auth=true",
-  ]
-  writeFile file: scopeConfigFile, text: npmrc.join('\n')
-  withEnv([
-    "NPM_CONFIG_USERCONFIG=$scopeConfigFile",
-  ]) { ->
-    withSecretEnv([
-      [var: 'ARTIFACTORY_USERNAME', password: server.username],
-      [var: 'ARTIFACTORY_PASSWORD_BASE64', password: server.password.bytes.encodeBase64().toString()],
-    ]) { ->
-      body.call()
+  withScope('NPM', 'file', Paths.get('.npmrc'), 'NPM_CONFIG_USERCONFIG', body) { ->
+    echo "Writing $env.NPM_CONFIG_USERCONFIG..."
+    withArtifactory(artifactoryServerId, 'ARTIFACTORY_URL', 'ARTIFACTORY_USER', 'ARTIFACTORY_PASSWORD', deployment) { ->
+      writeFile file: env.NPM_CONFIG_USERCONFIG,
+        text: new StreamingTemplateEngine().createTemplate(libraryResource('org/fidata/scope/.npmrc.template')).make(
+          url: new URL(env.ARTIFACTORY_URL),
+          artifactoryUsername: env.ARTIFACTORY_USER, // TODO: Deployer credentials may be needed
+          artifactoryPasswordBase64: env.ARTIFACTORY_PASSWORD.bytes.encodeBase64().toString(),
+          email: 'jenkins@fidata.org', // TODO
+        ),
+        encoding: 'UTF-8'
     }
   }
 }
