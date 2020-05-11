@@ -72,7 +72,7 @@ void call(String artifactoryServerId, boolean deployment = false, Closure body) 
           url: new URL(env.ARTIFACTORY_URL),
           artifactoryUsername: env.ARTIFACTORY_USER, // TODO: Deployer credentials may be needed
           artifactoryPasswordBase64: env.ARTIFACTORY_PASSWORD.bytes.encodeBase64().toString(),
-          email: 'jenkins@fidata.org', // TODO
+          email: 'jenkins@fidata.org' // TODO
         ),
         encoding: 'UTF-8'
     }
