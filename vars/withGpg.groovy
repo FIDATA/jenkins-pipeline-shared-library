@@ -23,7 +23,6 @@ import static org.fidata.gpg.GpgUtils.GPG_CONF_FILE_NAME
 import static org.fidata.gpg.GpgUtils.GPG_AGENT_CONF_FILE_NAME
 import static org.fidata.gpg.GpgUtils.getKeyUsages
 import com.cloudbees.plugins.credentials.CredentialsProvider
-import java.nio.file.Paths
 import org.jenkinsci.plugins.plaincredentials.FileCredentials
 @Grab('org.bouncycastle:bcpg-jdk15on:[1, 2[')
 import org.bouncycastle.openpgp.PGPSecretKeyRing
@@ -58,7 +57,7 @@ String getGpgVersion() {
  * @return GPG home directory
  */
 String getGpgHome(String artifactoryServerId) {
-  withGroovy(Paths.get('.groovy/grapeConfig.xml'), artifactoryServerId) { ->
+  withGroovy(artifactoryServerId) { ->
     ws { ->
       final String getGpgHomeFilename = 'getGpgHome.groovy'
       writeFile file: getGpgHomeFilename, text: libraryResource("org/fidata/gpg/$getGpgHomeFilename"), encoding: 'UTF-8'
@@ -123,7 +122,7 @@ void call(String artifactoryServerId, String keyCredentialId, String passphraseC
   echo 'Getting GPG home...'
   String originalGpgHome = getGpgHome(artifactoryServerId)
 
-  withScope 'GPG', 'dir', Paths.get('.gnupg'), '$GNUPGHOME', { ->
+  withScope 'GPG', 'dir', '.gnupg', 'GNUPGHOME', { ->
     body.call(fingerprint)
   }, { ->
     echo 'Copying existing GPG configuration files to GPG scope...'

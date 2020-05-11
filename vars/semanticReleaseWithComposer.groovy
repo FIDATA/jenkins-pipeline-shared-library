@@ -18,7 +18,7 @@
  * permissions and limitations under the License.
  */
 
-void call(final Map<String, Object> config = [:]) {
+void call(final Map<String, ? extends Serializable> config = [:]) {
   try {
     final Map<String, Integer> timeouts = (Map<String, Integer>) config.getOrDefault('timeouts', [:])
 

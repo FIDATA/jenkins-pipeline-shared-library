@@ -20,10 +20,9 @@
 
 import groovy.text.GStringTemplateEngine
 import groovy.text.Template
-import java.nio.file.Path
 import java.nio.file.Paths
 
-void callWithZeroOrOneArg(Object arg, Closure closure) {
+void callWithZeroOrOneArg(Serializable arg, Closure closure) {
   switch (closure.maximumNumberOfParameters) {
     case 0:
       body.call()
@@ -36,11 +35,10 @@ void callWithZeroOrOneArg(Object arg, Closure closure) {
   }
 }
 
-void call(String name, String type, Path path, String envVarName, Template envVarTemplate = new GStringTemplateEngine().createTemplate('$value'), Closure body, Closure configClosure, Closure finalizeClosure = null) {
+void call(String name, String type, String path, String envVarName, Template envVarTemplate = new GStringTemplateEngine().createTemplate('$value'), Closure body, Closure configClosure, Closure finalizeClosure = null) {
   final String title = "$name scope $type"
   final String envVarValue = envVarTemplate.make(value: path)
-  path = Paths.get(pwd(), '.scope').resolve(path)
-  final String arg = path.toString()
+  path = Paths.get(pwd(), '.scope').resolve(path).toString()
 
   final String currEnvVarValue = env[envVarName]
   if (currEnvVarValue != null) {
@@ -61,11 +59,11 @@ void call(String name, String type, Path path, String envVarName, Template envVa
   echo "Creating $title and set permissions..."
   switch (type) {
     case 'dir':
-      dir path.toString()
+      dir path
       break
     case 'file':
       // dir path.parent.toString()
-      touch path.toString()
+      touch path
       break
     default:
       throw new IllegalArgumentException(String.format('Unknown scope type: %s', $type))
@@ -83,7 +81,7 @@ void call(String name, String type, Path path, String envVarName, Template envVa
   try {
     withEnv(["$envVarName=$envVarValue"]) { ->
       echo "Configuring $title..."
-      callWithZeroOrOneArg arg, configClosure
+      callWithZeroOrOneArg path, configClosure
 
       body.call()
     }
@@ -97,10 +95,10 @@ void call(String name, String type, Path path, String envVarName, Template envVa
     try {
       switch (type) {
         case 'dir':
-          deleteDir path.toString()
+          deleteDir path
           break
         case 'file':
-          fileOperations([fileDeleteOperation(includes: path.toString())])
+          fileOperations([fileDeleteOperation(includes: path)])
           break
       }
     } catch (ignored) { }

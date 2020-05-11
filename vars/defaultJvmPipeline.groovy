@@ -23,7 +23,7 @@ import org.jfrog.hudson.pipeline.common.types.ArtifactoryServer
 import org.jfrog.hudson.pipeline.common.types.packageManagerBuilds.GradleBuild
 import org.jfrog.hudson.pipeline.common.types.buildInfo.BuildInfo
 
-void call(final Map<String, Object> config) {
+void call(final Map<String, ? extends Serializable> config) {
   try {
     final boolean publicReleases = config['publicReleases']
     final Map<String, Integer> timeouts = (Map<String, Integer>) config.getOrDefault('timeouts', [:])

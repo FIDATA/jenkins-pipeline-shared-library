@@ -24,7 +24,6 @@ import com.github.zafarkhaja.semver.ParseException
 import com.github.zafarkhaja.semver.Version
 import groovy.text.StreamingTemplateEngine
 import hudson.AbortException
-import java.nio.file.Paths
 import java.util.regex.Matcher
 
 /**
@@ -65,7 +64,7 @@ void call(String artifactoryServerId, boolean deployment = false, Closure body) 
     }
   }
 
-  withScope('NPM', 'file', Paths.get('.npmrc'), 'NPM_CONFIG_USERCONFIG', body) { ->
+  withScope('NPM', 'file', '.npmrc', 'NPM_CONFIG_USERCONFIG', body) { ->
     echo "Writing $env.NPM_CONFIG_USERCONFIG..."
     withArtifactory(artifactoryServerId, 'ARTIFACTORY_URL', 'ARTIFACTORY_USER', 'ARTIFACTORY_PASSWORD', deployment) { ->
       writeFile file: env.NPM_CONFIG_USERCONFIG,

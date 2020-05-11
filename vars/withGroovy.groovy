@@ -36,7 +36,7 @@ boolean call(String artifactoryServerId, Closure body) {
     throw new UnsupportedOperationException('Installing groovy under Windows is not supported yet')
   }
 
-  withScope('Grape', 'file', Paths.get('.groovy/grapeConfig.xml'), 'JAVA_OPTS', new GStringTemplateEngine().createTemplate('-Dgrape.config=$value'), body) { String grapeConfigPath ->
+  withScope('Grape', 'file', '.groovy/grapeConfig.xml', 'JAVA_OPTS', new GStringTemplateEngine().createTemplate('-Dgrape.config=$value'), body) { String grapeConfigPath ->
     echo "Writing $grapeConfigPath..."
     withArtifactory(artifactoryServerId, 'ARTIFACTORY_URL', 'ARTIFACTORY_USER', 'ARTIFACTORY_PASSWORD', false) {
       /*
