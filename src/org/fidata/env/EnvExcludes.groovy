@@ -1,6 +1,6 @@
 package org.fidata.env
 
-@Grab('com.google.guava:guava:29.0-jre')
+// @Grab('com.google.guava:guava:29.0-jre')
 import com.google.common.collect.ImmutableList
 import groovy.transform.CompileStatic
 
