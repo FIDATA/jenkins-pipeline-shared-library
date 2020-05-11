@@ -74,7 +74,7 @@ void call(String artifactoryServerId, boolean deployment = false, Closure body) 
           artifactoryUsername: server.username, // TODO: Deployer credentials may be needed
           artifactoryPasswordBase64: server.password.bytes.encodeBase64().toString(),
           email: 'jenkins@fidata.org' // TODO
-        ),
+        ).toString(),
         encoding: 'UTF-8'
     }
   }

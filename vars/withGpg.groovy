@@ -116,7 +116,7 @@ void call(String artifactoryServerId, String keyCredentialId, String passphraseC
       !key.privateKeyEmpty &&
       getKeyUsages(key).contains(PGPKeyFlags.CAN_SIGN)
     }.publicKey.fingerprint
-  )/*.toString()*/.toUpperCase()
+  ).toUpperCase()
   echo "Found GPG key $fingerprint"
 
   echo 'Getting GPG home...'
