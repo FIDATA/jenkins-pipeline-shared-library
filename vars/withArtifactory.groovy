@@ -15,18 +15,18 @@ void call(String serverId, String urlEnvVar, String usernameEnvVar, String passw
   }
   if (server == null) {
     throw new IllegalArgumentException(String.format('Server named %s not found', serverId))
-  }
+  }*/
 
-  final CredentialsConfig credentialsConfig = deployment ? server.deployerCredentialsConfig : server.resolvingCredentialsConfig
+  // final CredentialsConfig credentialsConfig = deployment ? server.deployerCredentialsConfig : server.resolvingCredentialsConfig
   final List<Map<String, String>> secretEnv = []
   final List<MultiBinding<?>> credentialBindings = []
-  if (PluginsUtils.credentialsPluginEnabled) {
+  /*if (PluginsUtils.credentialsPluginEnabled) {
     credentialBindings.add usernamePassword(credentialsId: credentialsConfig.credentialsId, usernameVariable: usernameEnvVar, passwordVariable: passwordEnvVar)
   } else {
     Credentials credentials = credentialsConfig.provideCredentials(currentBuild.rawBuild)
     secretEnv.add [var: usernameEnvVar, password: credentials.username] // TOTHINK
     secretEnv.add [var: passwordEnvVar, password: credentials.password]
-  }
+  }*/
 
   withEnv([
     "$urlEnvVar=$server.url",
@@ -36,5 +36,5 @@ void call(String serverId, String urlEnvVar, String usernameEnvVar, String passw
         body.call()
       }
     }
-  }*/
+  }
 }
