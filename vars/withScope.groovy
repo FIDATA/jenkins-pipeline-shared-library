@@ -42,9 +42,10 @@ void call(String name, String type, Path path, String envVarName, Template envVa
   path = Paths.get(pwd(), '.scope').resolve(path)
   final String arg = path.toString()
 
-  if (env.containsKey(envVarName)) {
-    if (env[envVarName] != envVarValue) {
-      throw new IllegalStateException(String.format('Environment variable %s is already set to value %s. New value: %s', envVarName, env[envVarName], envVarValue))
+  final String currEnvVarValue = env[envVarName]
+  if (currEnvVarValue != null) {
+    if (currEnvVarValue != envVarValue) {
+      throw new IllegalStateException(String.format('Environment variable %s is already set to value %s. New value: %s', envVarName, currEnvVarValue, envVarValue))
     }
     echo "$title already configured"
     body.call()
