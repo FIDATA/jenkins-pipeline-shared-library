@@ -19,16 +19,15 @@
  */
 
 import groovy.text.GStringTemplateEngine
-import groovy.text.Template
 import java.nio.file.Paths
 
 void callWithZeroOrOneArg(Serializable arg, Closure closure) {
   switch (closure.maximumNumberOfParameters) {
     case 0:
-      body.call()
+      closure.call()
       break
     case 1:
-      body.call(arg)
+      closure.call(arg)
       break
     default:
       throw new IllegalArgumentException(String.format('Invalid number of closure parameters: %d', closure.maximumNumberOfParameters))
