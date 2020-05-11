@@ -11,8 +11,8 @@ import org.jfrog.hudson.CredentialsConfig
  * Since {@link org.jfrog.hudson.pipeline.common.executors.GetArtifactoryServerExecutor} gives us resolving credentials only
  */
 @CompileStatic
-final class ArtifactoryUtils {
-  static final void replaceCredentialsWithDeployment(org.jfrog.hudson.pipeline.common.types.ArtifactoryServer artifactoryServer, Item item) {
+/*final*/ class ArtifactoryUtils {
+  static void replaceCredentialsWithDeployment(org.jfrog.hudson.pipeline.common.types.ArtifactoryServer artifactoryServer, Item item) {
     final String serverId = artifactoryServer.serverName
     final ArtifactoryServer server = getArtifactoryServers().find { ArtifactoryServer server ->
       server.name == serverId
@@ -25,7 +25,7 @@ final class ArtifactoryUtils {
     artifactoryServer.password = credentialsConfig.providePassword(item)
   }
 
-  private ArtifactoryUtils() {
+  /*private ArtifactoryUtils() {
     throw new UnsupportedOperationException()
-  }
+  }*/
 }
