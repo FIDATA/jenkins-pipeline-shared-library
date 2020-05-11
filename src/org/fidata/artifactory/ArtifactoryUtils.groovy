@@ -14,7 +14,7 @@ import org.jfrog.hudson.CredentialsConfig
 @CompileStatic
 /*final*/ class ArtifactoryUtils {
   static org.jfrog.hudson.pipeline.common.types.ArtifactoryServer replaceCredentialsWithDeployment(org.jfrog.hudson.pipeline.common.types.ArtifactoryServer artifactoryServer, Item item) {
-    /*final String serverId = artifactoryServer.serverName
+    final String serverId = artifactoryServer.serverName
     final ArtifactoryServer server = getArtifactoryServers().find { ArtifactoryServer server ->
       server.name == serverId
     }
@@ -23,7 +23,7 @@ import org.jfrog.hudson.CredentialsConfig
     }
     final CredentialsConfig credentialsConfig = server.deployerCredentialsConfig
     artifactoryServer.username = credentialsConfig.provideUsername(item)
-    artifactoryServer.password = credentialsConfig.providePassword(item)*/
+    artifactoryServer.password = credentialsConfig.providePassword(item)
     artifactoryServer
   }
 

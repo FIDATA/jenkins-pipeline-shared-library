@@ -1,4 +1,4 @@
-import static org.fidata.artifactory.ArtifactoryUtils.replaceCredentialsWithDeployment
+// import static org.fidata.artifactory.ArtifactoryUtils.replaceCredentialsWithDeployment
 import org.jfrog.hudson.pipeline.common.types.ArtifactoryServer
 
 void call(String serverId, boolean deployment, Closure body) {
