@@ -29,7 +29,7 @@ void call(String serverId, String urlEnvVar, String usernameEnvVar, String passw
   }*/
 
   withEnv([
-    "$urlEnvVar=$server.url",
+    // "$urlEnvVar=$server.url",
   ]) { ->
     withCredentials(credentialBindings) { ->
       withSecretEnv(secretEnv) { ->
