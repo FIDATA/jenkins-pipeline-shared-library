@@ -13,7 +13,7 @@ import org.jfrog.hudson.CredentialsConfig
  */
 @CompileStatic
 /*final*/ class ArtifactoryUtils {
-  static org.jfrog.hudson.pipeline.common.types.ArtifactoryServer replaceCredentialsWithDeployment(org.jfrog.hudson.pipeline.common.types.ArtifactoryServer artifactoryServer, Item item) {
+  static org.jfrog.hudson.pipeline.common.types.ArtifactoryServer provideCredentials(org.jfrog.hudson.pipeline.common.types.ArtifactoryServer artifactoryServer, boolean deployment, Item item) {
     final String serverId = artifactoryServer.serverName
     final ArtifactoryServer server = getArtifactoryServers().find { ArtifactoryServer server ->
       server.name == serverId
@@ -21,7 +21,7 @@ import org.jfrog.hudson.CredentialsConfig
     if (server == null) {
       throw new IllegalArgumentException(String.format('Server named %s not found', serverId))
     }
-    final CredentialsConfig credentialsConfig = server.deployerCredentialsConfig
+    final CredentialsConfig credentialsConfig = deployment ? server.deployerCredentialsConfig : server.resolvingCredentialsConfig
     artifactoryServer.username = credentialsConfig.provideUsername(item)
     artifactoryServer.password = credentialsConfig.providePassword(item)
     artifactoryServer
