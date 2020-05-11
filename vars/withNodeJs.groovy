@@ -25,6 +25,7 @@ import com.github.zafarkhaja.semver.Version
 import groovy.text.StreamingTemplateEngine
 import hudson.AbortException
 import java.util.regex.Matcher
+import org.jfrog.hudson.pipeline.common.types.ArtifactoryServer
 
 /**
  * Gets NodeJS version as String, e.g. {@code 1.2.3}
@@ -66,12 +67,12 @@ void call(String artifactoryServerId, boolean deployment = false, Closure body) 
 
   withScope('NPM', 'file', '.npmrc', 'NPM_CONFIG_USERCONFIG', body) { ->
     echo "Writing $env.NPM_CONFIG_USERCONFIG..."
-    withArtifactory(artifactoryServerId, 'ARTIFACTORY_URL', 'ARTIFACTORY_USER', 'ARTIFACTORY_PASSWORD', deployment) { ->
+    withArtifactory(artifactoryServerId, deployment) { ArtifactoryServer server ->
       writeFile file: env.NPM_CONFIG_USERCONFIG,
         text: new StreamingTemplateEngine().createTemplate(libraryResource('org/fidata/scope/.npmrc.template')).make(
-          url: new URL(env.ARTIFACTORY_URL),
-          artifactoryUsername: env.ARTIFACTORY_USER, // TODO: Deployer credentials may be needed
-          artifactoryPasswordBase64: env.ARTIFACTORY_PASSWORD.bytes.encodeBase64().toString(),
+          url: new URL(server.url),
+          artifactoryUsername: server.username, // TODO: Deployer credentials may be needed
+          artifactoryPasswordBase64: server.password.bytes.encodeBase64().toString(),
           email: 'jenkins@fidata.org' // TODO
         ),
         encoding: 'UTF-8'

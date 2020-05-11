@@ -10,8 +10,8 @@ import groovy.transform.CompileStatic
  * <grv87 2018-09-22>
  */
 @CompileStatic
-class EnvExcludes {
-  static final List<String> EXCLUDES = new ImmutableList.Builder<String>()
+final class EnvExcludes {
+  public static final List<String> EXCLUDES = new ImmutableList.Builder<String>()
     .add('*Password')
     .add('*Passphrase')
     .add('*SecretKey')
@@ -24,4 +24,8 @@ class EnvExcludes {
     .add('*Token')
     .add('*_AUTH') // COMPOSER_AUTH
     .build()
+
+  private EnvExcludes() {
+    throw new UnsupportedOperationException()
+  }
 }

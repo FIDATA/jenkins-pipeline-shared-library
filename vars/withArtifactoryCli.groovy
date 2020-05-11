@@ -64,20 +64,27 @@ void call(String serverId, boolean deployment = true, Closure body) {
     }
   }
 
-  final ArtifactoryServer server = Artifactory.server(serverId)
-
-  withEnv([
-    "JFROG_CLI_JCENTER_REMOTE_SERVER=$serverId",
-    'JFROG_CLI_JCENTER_REMOTE_REPO=com.bintray.jcenter',
-    "ARTIFACTORY_THREADS=$server.deploymentThreads",
-    'CI=true', // Disables interactive prompts and progress bar in JFrog CLI (see `jfrog --help`)
-    "JFROG_CLI_ENV_EXCLUDE=${ EnvExcludes.EXCLUDES.join(';') }"
-  ]) { ->
-    withScope('JFrog', 'dir', scopeDir, 'JFROG_CLI_HOME_DIR', body) { ->
-      echo "Configuring JFrog Artifactory CLI..."
-      withArtifactory(serverId, 'ARTIFACTORY_URL', 'ARTIFACTORY_USER', 'ARTIFACTORY_PASSWORD', deployment) { ->
-        exec "jfrog rt config --url=${ e('ARTIFACTORY_URL') } --user=${ e('ARTIFACTORY_USER') } --password=${ e('ARTIFACTORY_PASSWORD') } --interactive=false \"$serverId\""
-        exec "jfrog rt use \"$serverId\""
+  withArtifactory(serverId, deployment) { ArtifactoryServer server ->
+    withEnv([
+      "JFROG_CLI_JCENTER_REMOTE_SERVER=$server.serverName",
+      'JFROG_CLI_JCENTER_REMOTE_REPO=com.bintray.jcenter',
+      "ARTIFACTORY_THREADS=$server.deploymentThreads",
+      'CI=true', // Disables interactive prompts and progress bar in JFrog CLI (see `jfrog --help`)
+      "JFROG_CLI_ENV_EXCLUDE=${ EnvExcludes.EXCLUDES.join(';') }"
+    ]) { ->
+      withScope('JFrog', 'dir', scopeDir, 'JFROG_CLI_HOME_DIR', body) { ->
+        echo "Configuring JFrog Artifactory CLI..."
+          withEnv([
+            "$urlEnvVar=$server.url",
+          ]) { ->
+          withSecretEnv([
+            [var: usernameEnvVar, password: server.username], // TOTHINK
+            [var: passwordEnvVar, password: server.password],
+          ]) { ->
+            exec "jfrog rt config --url=${ e('ARTIFACTORY_URL') } --user=${ e('ARTIFACTORY_USER') } --password=${ e('ARTIFACTORY_PASSWORD') } --interactive=false \"$serverId\""
+            exec "jfrog rt use \"$serverId\""
+          }
+        }
       }
     }
   }

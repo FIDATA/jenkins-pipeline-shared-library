@@ -33,11 +33,11 @@ final class GpgUtils {
   /**
    * GPG configuration file name
    */
-  static final String GPG_CONF_FILE_NAME = 'gpg.conf'
+  public static final String GPG_CONF_FILE_NAME = 'gpg.conf'
   /**
    * GPG agent configuration file name
    */
-  static final String GPG_AGENT_CONF_FILE_NAME = 'gpg-agent.conf'
+  public static final String GPG_AGENT_CONF_FILE_NAME = 'gpg-agent.conf'
 
   /**
    * Gets GPG key usages as set of constants.

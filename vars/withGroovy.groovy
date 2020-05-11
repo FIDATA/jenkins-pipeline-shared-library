@@ -18,6 +18,7 @@
  * permissions and limitations under the License.
  */
 import groovy.text.XmlTemplateEngine
+import org.jfrog.hudson.pipeline.common.types.ArtifactoryServer
 
 boolean call(String artifactoryServerId, Closure body) {
   /*
@@ -36,7 +37,7 @@ boolean call(String artifactoryServerId, Closure body) {
 
   withScope('Grape', 'file', '.groovy/grapeConfig.xml', 'JAVA_OPTS', '-Dgrape.config=$value', body) { String grapeConfigPath ->
     echo "Writing $grapeConfigPath..."
-    withArtifactory(artifactoryServerId, 'ARTIFACTORY_URL', 'ARTIFACTORY_USER', 'ARTIFACTORY_PASSWORD', false) {
+    withArtifactory(artifactoryServerId, false) { ArtifactoryServer server ->
       /*
        * WORKAROUND:
        * XmlTemplateEngine removes XML declaration from template
@@ -47,9 +48,9 @@ boolean call(String artifactoryServerId, Closure body) {
         text: """\
           <?xml version='1.0' encoding='$encoding'?>
           ${ new XmlTemplateEngine().createTemplate(libraryResource('org/fidata/scope/grapeConfig.xml.gsp')).make([
-            url: new URL(env.ARTIFACTORY_URL),
-            username: env.ARTIFACTORY_USER,
-            password: env.ARTIFACTORY_PASSWORD,
+            url: new URL(server.url),
+            username: server.username,
+            password: server.password,
           ]) }
         """.stripIndent(),
         encoding: encoding

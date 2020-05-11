@@ -27,6 +27,7 @@ import hudson.AbortException
 import hudson.util.Secret
 import java.util.regex.Matcher
 import org.jenkinsci.plugins.plaincredentials.StringCredentials
+import org.jfrog.hudson.pipeline.common.types.ArtifactoryServer
 
 /**
  * Gets Composer version as String, e.g. {@code 1.2.3}
@@ -72,8 +73,8 @@ void call(String artifactoryServerId, String githubCredentialId, Closure body) {
       }
     }
     withScope('Composer', 'dir', '.composer' /* TOTHINK */, 'COMPOSER_HOME', body) { ->
-      withArtifactory(artifactoryServerId, 'ARTIFACTORY_URL', 'ARTIFACTORY_USERNAME', 'ARTIFACTORY_PASSWORD', false) { ->
-        final URL url = new URL(env.ARTIFACTORY_URL)
+      withArtifactory(artifactoryServerId, false) { ArtifactoryServer server ->
+        final URL url = new URL(server.url)
 
         echo "Writing $env.COMPOSER_HOME/config.json..."
         final Map<String, ? extends Serializable> config = [
@@ -102,8 +103,8 @@ void call(String artifactoryServerId, String githubCredentialId, Closure body) {
         final Map<String, ? extends Serializable> auth = [
           'http-basic': [
             (url.host): [
-              'username': env.ARTIFACTORY_USERNAME,
-              'password': env.ARTIFACTORY_PASSWORD,
+              'username': server.username,
+              'password': server.password,
             ],
           ],
           'github-oauth': [
